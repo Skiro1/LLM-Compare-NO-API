@@ -1,0 +1,3772 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Multi-LLM + Синтез</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <style>
+        :root {
+            --bg: #ffffff;
+            --bg-body: #f4f4f5;
+            --bg-card: #ffffff;
+            --bg-card-alt: #fafafa;
+            --bg-code: #18181b;
+            --bg-code-inline: #f4f4f5;
+            --bg-btn: #18181b;
+            --bg-btn-hover: #27272a;
+            --bg-btn-outline: #ffffff;
+            --bg-btn-outline-hover: #f4f4f5;
+            --bg-btn-copy: #f4f4f5;
+            --bg-btn-copy-hover: #e4e4e7;
+            --bg-modal: #ffffff;
+            --bg-panel: #ffffff;
+            --bg-input: #ffffff;
+            --bg-step-active: #18181b;
+            --bg-step-completed: #f4f4f5;
+            --bg-step-default: #f4f4f5;
+            --bg-select-all: #f4f4f5;
+            --bg-badge-dark: #18181b;
+            --bg-badge-light: #f4f4f5;
+            --bg-bubble-user: #18181b;
+            --bg-bubble-ai: #f4f4f5;
+            --bg-md-pre: #18181b;
+            --bg-md-th: #f4f4f5;
+            --bg-continuation: #eff6ff;
+            --bg-overlay: rgba(0,0,0,0.5);
+            --bg-overlay-history: rgba(0,0,0,0.25);
+            --bg-gradient-from: #ffffff;
+            --bg-gradient-to: #e4e4e7;
+            --bg-scrollbar-track: #f4f4f5;
+            --bg-hover: #f9fafb;
+            --border: #e4e4e7;
+            --border-light: #f4f4f5;
+            --border-primary: #3b82f6;
+            --text: #18181b;
+            --text-secondary: #52525b;
+            --text-muted: #71717a;
+            --text-placeholder: #a1a1aa;
+            --text-white: #ffffff;
+            --text-blue: #2563eb;
+            --text-blue-dark: #1d4ed8;
+            --text-red: #ef4444;
+            --text-green: #166534;
+            --text-green-light: #4ade80;
+            --accent: #3b82f6;
+            --shadow: -4px 0 24px rgba(0,0,0,0.08);
+            --shadow-hover: 0 2px 8px rgba(0,0,0,0.07);
+        }
+        [data-theme="dark"] {
+            --bg: #09090b;
+            --bg-body: #09090b;
+            --bg-card: #18181b;
+            --bg-card-alt: #1c1c1f;
+            --bg-code: #0f0f11;
+            --bg-code-inline: #27272a;
+            --bg-btn: #fafafa;
+            --bg-btn-hover: #e4e4e7;
+            --bg-btn-outline: #18181b;
+            --bg-btn-outline-hover: #27272a;
+            --bg-btn-copy: #27272a;
+            --bg-btn-copy-hover: #3f3f46;
+            --bg-modal: #18181b;
+            --bg-panel: #18181b;
+            --bg-input: #18181b;
+            --bg-step-active: #fafafa;
+            --bg-step-completed: #27272a;
+            --bg-step-default: #27272a;
+            --bg-select-all: #27272a;
+            --bg-badge-dark: #fafafa;
+            --bg-badge-light: #27272a;
+            --bg-bubble-user: #3b82f6;
+            --bg-bubble-ai: #27272a;
+            --bg-md-pre: #0f0f11;
+            --bg-md-th: #27272a;
+            --bg-continuation: #172554;
+            --bg-overlay: rgba(0,0,0,0.7);
+            --bg-overlay-history: rgba(0,0,0,0.5);
+            --bg-gradient-from: #09090b;
+            --bg-gradient-to: #18181b;
+            --bg-scrollbar-track: #27272a;
+            --bg-hover: #1c1c1f;
+            --border: #27272a;
+            --border-light: #1c1c1f;
+            --border-primary: #3b82f6;
+            --text: #fafafa;
+            --text-secondary: #a1a1aa;
+            --text-muted: #71717a;
+            --text-placeholder: #52525b;
+            --text-white: #ffffff;
+            --text-blue: #60a5fa;
+            --text-blue-dark: #93c5fd;
+            --text-red: #f87171;
+            --text-green: #4ade80;
+            --text-green-light: #4ade80;
+            --accent: #3b82f6;
+            --shadow: -4px 0 24px rgba(0,0,0,0.3);
+            --shadow-hover: 0 2px 8px rgba(0,0,0,0.2);
+        }
+        * { box-sizing: border-box; }
+        html { font-size: 17px; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; font-size: 1rem; background: var(--bg-body); color: var(--text); }
+        .step-btn { transition: all 0.2s; }
+        .step-btn.active { background: var(--bg-step-active); color: var(--bg); }
+        .step-btn.completed { background: var(--bg-step-completed); color: var(--text); }
+        .step-btn:not(.active):not(.completed) { background: var(--bg-step-default); color: var(--text-placeholder); }
+        .card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 0.6rem; padding: 1.75rem; margin-bottom: 1.1rem; }
+        .card-primary { border-color: var(--border-primary); }
+        .textarea { width: 100%; border: 1px solid var(--border); border-radius: 0.6rem; padding: 1rem; resize: vertical; min-height: 150px; font-size: 1rem; background: var(--bg-input); color: var(--text); }
+        .textarea:focus { outline: none; border-color: var(--border-primary); box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1); }
+        .input { width: 100%; border: 1px solid var(--border); border-radius: 0.6rem; padding: 0.65rem 1rem; font-size: 1rem; background: var(--bg-input); color: var(--text); }
+        .input:focus { outline: none; border-color: var(--border-primary); box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1); }
+        .btn { display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.55rem 1.1rem; border-radius: 0.5rem; font-size: 0.95rem; font-weight: 500; cursor: pointer; border: none; transition: all 0.2s; }
+        .btn-primary { background: var(--bg-btn); color: var(--bg); }
+        .btn-primary:hover { background: var(--bg-btn-hover); }
+        .btn-primary:disabled { background: var(--text-placeholder); cursor: not-allowed; }
+        .btn-outline { background: var(--bg-btn-outline); color: var(--text); border: 1px solid var(--border); }
+        .btn-outline:hover { background: var(--bg-btn-outline-hover); }
+        .btn-copy { background: var(--bg-btn-copy); color: var(--text); }
+        .btn-copy:hover { background: var(--bg-btn-copy-hover); }
+        .btn-copy.copied { background: #dcfce7; color: #166534; }
+        .btn-danger { background: #ef4444; color: white; }
+        .btn-danger:hover { background: #dc2626; }
+        .btn-sm { padding: 0.4rem 0.8rem; font-size: 0.875rem; }
+        .btn-icon { justify-content: center; width: 2.4rem; height: 2.4rem; padding: 0; }
+        .btn-icon.btn-sm { width: 2rem; height: 2rem; padding: 0; }
+        .btn-icon svg { pointer-events: none; }
+        .badge { display: inline-block; padding: 0.3rem 0.65rem; border-radius: 0.3rem; font-size: 0.875rem; font-weight: 500; }
+        .badge-dark { background: var(--bg-badge-dark); color: var(--bg); }
+        .badge-light { background: var(--bg-badge-light); color: var(--text); }
+        .code-block { background: var(--bg-code-inline); border-radius: 0.6rem; padding: 1.2rem; font-family: 'Consolas', 'Monaco', monospace; font-size: 0.875rem; white-space: pre-wrap; word-break: break-word; overflow: hidden; color: var(--text); }
+        .step-content { display: none; }
+        .step-content.active { display: block; }
+        .scrollable { max-height: 360px; overflow-y: auto; }
+        .arrow { color: var(--text-placeholder); font-size: 1.2rem; }
+        .hidden { display: none; }
+        /* Modal */
+        .modal-overlay { position: fixed; inset: 0; background: var(--bg-overlay); z-index: 50; display: flex; align-items: center; justify-content: center; padding: 1.5rem; }
+        .modal-overlay.hidden { display: none; }
+        .modal { background: var(--bg-modal); border-radius: 0.9rem; width: 100%; max-width: 780px; max-height: 90vh; overflow: hidden; display: flex; flex-direction: column; }
+        .modal-header { padding: 1.25rem 1.75rem; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; color: var(--text); }
+        .modal-body { padding: 1.75rem; overflow-y: auto; flex: 1; max-height: 60vh; }
+        .modal-footer { padding: 1rem 1.75rem; border-top: 1px solid var(--border); display: flex; justify-content: flex-end; gap: 0.65rem; }
+        .model-row { display: flex; align-items: center; gap: 1rem; padding: 1rem; border: 1px solid var(--border); border-radius: 0.6rem; margin-bottom: 0.6rem; color: var(--text); }
+        .model-row:hover { background: var(--bg-hover); }
+        .model-info { flex: 1; min-width: 0; }
+        .model-checkbox { width: 20px; height: 20px; cursor: pointer; flex-shrink: 0; margin: 0; vertical-align: middle; }
+        #selectAllRow { background: var(--bg-select-all); transition: background 0.2s; align-items: center; }
+        #selectAllRow .model-checkbox { margin-right: 0.75rem; }
+        #selectAllRow span { line-height: 1; }
+        #selectAllRow.selected { background: var(--bg-select-all); }
+        #selectAllRow.selected span { color: var(--text-muted) !important; }
+        #selectAllRow.selected input { accent-color: var(--accent); }
+        .tab-pane { display: none; }
+        .tab-pane.active { display: block; }
+        .settings-tab { padding: 0.65rem 1.3rem; border-bottom: 2px solid transparent; cursor: pointer; font-size: 1rem; font-weight: 500; color: var(--text-muted); }
+        .settings-tab:hover { color: var(--text); }
+        .settings-tab.active { border-color: var(--text); color: var(--text); }
+        /* Markdown Styles */
+        .md-content { font-size: 1rem; line-height: 1.7; color: var(--text); }
+        .md-content h1 { font-size: 1.5em; font-weight: 700; margin: 1em 0 0.5em; border-bottom: 1px solid var(--border); padding-bottom: 0.25em; }
+        .md-content h2 { font-size: 1.25em; font-weight: 600; margin: 1em 0 0.5em; }
+        .md-content h3 { font-size: 1.1em; font-weight: 600; margin: 0.75em 0 0.5em; }
+        .md-content p { margin: 0.75em 0; }
+        .md-content ul, .md-content ol { margin: 0.5em 0; padding-left: 1.8em; }
+        .md-content ul { list-style-type: disc; }
+        .md-content ol { list-style-type: decimal; }
+        .md-content li { margin: 0.3em 0; line-height: 1.6; }
+        .md-content li::marker { color: var(--text-secondary); }
+        .md-content code { background: var(--bg-code-inline); padding: 0.15em 0.4em; border-radius: 0.25em; font-size: 0.9em; font-family: 'Consolas', 'Monaco', monospace; color: var(--text); }
+        .md-content pre { background: var(--bg-md-pre); color: var(--text-placeholder); padding: 1.2rem; border-radius: 0.6rem; overflow-x: auto; margin: 1em 0; }
+        .md-content pre code { background: transparent; padding: 0; color: inherit; font-size: 0.9rem; }
+        .md-content blockquote { border-left: 4px solid var(--border); padding-left: 1em; margin: 1em 0; color: var(--text-secondary); font-style: italic; }
+        .md-content table { width: 100%; border-collapse: collapse; margin: 1em 0; font-size: 0.95rem; box-shadow: 0 1px 3px rgba(0,0,0,0.1); border-radius: 0.5rem; overflow: hidden; }
+        .md-content th, .md-content td { border: 1px solid var(--border); padding: 0.7em 0.9em; text-align: left; user-select: none; -webkit-user-select: none; -moz-user-select: none; -ms-user-select: none; }
+        .md-content th { background: var(--bg-md-th); font-weight: 600; font-size: 0.85em; text-transform: uppercase; letter-spacing: 0.03em; }
+        .md-content td { background: var(--bg-card); }
+        .md-content tr:nth-child(even) td { background: var(--bg-card-alt); }
+        .md-content tr:hover td { background: var(--bg-hover); }
+        .md-content a { color: var(--text-blue); text-decoration: underline; }
+        .md-content hr { border: none; border-top: 1px solid var(--border); margin: 1.5em 0; }
+        .md-content strong { font-weight: 600; }
+        .md-content em { font-style: italic; }
+        /* Collapsible Sections */
+        .answer-section { margin-bottom: 1.2rem; border: 1px solid var(--border); border-radius: 0.6rem; overflow: hidden; }
+        .answer-section-header { display: flex; align-items: center; justify-content: space-between; padding: 1rem 1.25rem; background: var(--bg-card-alt); cursor: pointer; user-select: none; }
+        .answer-section-header:hover { background: var(--bg-btn-copy); }
+        .answer-section-header-left { display: flex; align-items: center; gap: 0.6rem; }
+        .answer-section-toggle { width: 24px; height: 24px; transition: transform 0.2s; color: var(--text-muted); }
+        .answer-section-toggle.collapsed { transform: rotate(-90deg); }
+        .answer-section-content { border-top: 1px solid var(--border); padding: 1.25rem; background: var(--bg-card); }
+        .answer-section-content.collapsed { display: none; }
+        /* Code Block with Copy */
+        .code-block-wrapper { position: relative; background: var(--bg-code); border-radius: 0.6rem; margin: 1em 0; }
+        .code-block-wrapper .code-lang { position: absolute; top: 0.65rem; left: 0.85rem; color: var(--text-muted); font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.05em; }
+        .code-block-wrapper pre { margin: 0; padding: 1.2rem; padding-top: 2.5rem; overflow-x: auto; }
+        .code-block-wrapper pre code { background: transparent; color: var(--text-placeholder); font-size: 0.9rem; }
+        .code-copy-btn { position: absolute; top: 0.5rem; right: 0.5rem; width: 2rem; height: 2rem; padding: 0; background: rgba(255,255,255,0.1); color: var(--text-placeholder); border: none; border-radius: 0.3rem; font-size: 0.8rem; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+        .code-copy-btn:hover { background: rgba(255,255,255,0.2); }
+        .code-copy-btn.copied { background: rgba(34, 197, 94, 0.3); color: #4ade80; }
+        /* History Panel */
+        .history-panel { position: fixed; right: 0; top: 0; bottom: 0; width: 400px; max-width: 95vw; background: var(--bg-panel); border-left: 1px solid var(--border); z-index: 48; display: flex; flex-direction: column; transform: translateX(100%); transition: transform 0.3s cubic-bezier(.4,0,.2,1); box-shadow: var(--shadow); }
+        .history-panel.open { transform: translateX(0); }
+        .history-overlay { position: fixed; inset: 0; background: var(--bg-overlay-history); z-index: 47; display: none; cursor: pointer; }
+        .history-overlay.open { display: block; }
+        .history-header { padding: 1.1rem 1.4rem; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; flex-shrink: 0; color: var(--text); }
+        .history-body { flex: 1; overflow-y: auto; padding: 1rem 1.1rem; }
+        /* Thread entry */
+        .thread-entry { border: 1px solid var(--border); border-radius: 0.5rem; margin-bottom: 0.65rem; overflow: hidden; transition: box-shadow 0.15s; }
+        .thread-entry:hover { box-shadow: var(--shadow-hover); }
+        .thread-entry-header { padding: 0.75rem 1rem; cursor: pointer; background: var(--bg-card-alt); display: flex; align-items: flex-start; justify-content: space-between; gap: 0.5rem; }
+        .thread-title { font-size: 0.875rem; color: var(--text); font-weight: 500; line-height: 1.4; }
+        .thread-meta { font-size: 0.72rem; color: var(--text-muted); margin-top: 0.25rem; display: flex; gap: 0.6rem; flex-wrap: wrap; }
+        .thread-turns { border-top: 1px solid var(--border); }
+        .thread-turn-row { padding: 0.5rem 1rem; border-bottom: 1px solid var(--border-light); font-size: 0.78rem; color: var(--text-secondary); display: flex; align-items: center; gap: 0.5rem; cursor: default; }
+        .thread-turn-row:last-child { border-bottom: none; }
+        .thread-actions { padding: 0.5rem 1rem; background: var(--bg-card); border-top: 1px solid var(--border-light); display: flex; gap: 0.5rem; }
+        .history-empty { text-align: center; padding: 3rem 1rem; color: var(--text-placeholder); font-size: 0.9rem; }
+        /* In-page chat history */
+        .chat-history-wrap { margin-bottom: 1.1rem; border: 1px solid var(--border); border-radius: 0.7rem; overflow: hidden; background: var(--bg-card); }
+        .chat-history-head { padding: 0.7rem 1rem; background: var(--bg-card-alt); border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; color: var(--text); }
+        .chat-history-body { padding: 1rem; display: flex; flex-direction: column; gap: 0.85rem; max-height: 420px; overflow-y: auto; }
+        .chat-turn { display: flex; flex-direction: column; gap: 0.4rem; }
+        .chat-bubble-user { align-self: flex-end; background: var(--bg-bubble-user); color: var(--text-white); padding: 0.6rem 0.9rem; border-radius: 0.75rem 0.75rem 0.2rem 0.75rem; font-size: 0.875rem; max-width: 88%; white-space: pre-wrap; word-break: break-word; }
+        .chat-bubble-ai { align-self: flex-start; background: var(--bg-bubble-ai); color: var(--text); padding: 0.75rem 1rem; border-radius: 0.75rem 0.75rem 0.75rem 0.2rem; font-size: 0.875rem; max-width: 92%; }
+        .chat-bubble-ai .md-content { font-size: 0.875rem; }
+        .chat-bubble-ai-collapsed { max-height: 80px; overflow: hidden; position: relative; }
+        .chat-bubble-ai-collapsed::after { content:''; position:absolute; bottom:0; left:0; right:0; height:30px; background: linear-gradient(transparent, var(--bg-bubble-ai)); }
+        .chat-turn-num { font-size: 0.7rem; color: var(--text-placeholder); padding: 0 0.2rem; }
+        /* Continue Chat Modal */
+        .continue-url-row { display: flex; align-items: center; gap: 0.75rem; padding: 0.65rem 0; border-bottom: 1px solid var(--border-light); }
+        .continue-url-row:last-child { border-bottom: none; }
+        .continue-url-label { width: 90px; flex-shrink: 0; }
+        .continue-url-input { flex: 1; border: 1px solid var(--border); border-radius: 0.4rem; padding: 0.45rem 0.7rem; font-size: 0.85rem; background: var(--bg-input); color: var(--text); }
+        .continue-url-input:focus { outline: none; border-color: var(--border-primary); }
+        .continuation-badge { display: inline-flex; align-items: center; gap: 0.3rem; background: var(--bg-continuation); color: var(--text-blue-dark); border: 1px solid var(--border-primary); padding: 0.2rem 0.55rem; border-radius: 0.3rem; font-size: 0.78rem; font-weight: 500; }
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-track { background: var(--bg-scrollbar-track); border-radius: 4px; }
+        ::-webkit-scrollbar-thumb { background: var(--text-placeholder); border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }
+        .scrollable::-webkit-scrollbar { width: 6px; }
+        .scrollable::-webkit-scrollbar-track { background: transparent; }
+        .scrollable::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+        /* ── MOBILE & TABLET RESPONSIVE ───────────────────────────────────── */
+
+        /* Touch targets */
+        @media (max-width: 768px) {
+            html { font-size: 14px; }
+
+            /* Main layout */
+            body > div, .max-w-5xl { padding-left: 0.75rem !important; padding-right: 0.75rem !important; padding-top: 1rem !important; }
+
+            /* Cards */
+            .card { padding: 1rem; margin-bottom: 0.75rem; }
+
+            /* Buttons — bigger touch target */
+            .btn { padding: 0.65rem 1rem; font-size: 0.9rem; min-height: 42px; }
+            .btn-sm { padding: 0.55rem 0.75rem; font-size: 0.82rem; min-height: 36px; }
+
+            /* Textarea */
+            .textarea { min-height: 120px; font-size: 0.95rem; padding: 0.75rem; }
+
+            /* Badges smaller */
+            .badge { font-size: 0.78rem; padding: 0.2rem 0.5rem; }
+
+            /* Step navigation — horizontal scroll, no arrows */
+            .step-nav-arrows { display: none !important; }
+            .step-nav-wrap { gap: 0.25rem !important; flex-wrap: nowrap !important; overflow-x: auto; padding-bottom: 0.4rem; justify-content: flex-start !important; -webkit-overflow-scrolling: touch; scrollbar-width: none; }
+            .step-nav-wrap::-webkit-scrollbar { display: none; }
+            .step-btn { flex-shrink: 0; padding: 0.5rem 0.8rem !important; font-size: 0.78rem !important; }
+            .step-btn span { display: inline !important; }
+
+            /* Header */
+            .header-wrap { flex-direction: row; gap: 0.5rem; align-items: center; justify-content: space-between; }
+            .header-title { text-align: center; flex: 1; }
+            .header-title h1 { font-size: 1.3rem !important; }
+            .header-title p { font-size: 0.78rem !important; display: none; }
+            .header-btn-group { display: flex; gap: 0.4rem; flex-shrink: 0; }
+
+            /* Card header button groups — stack */
+            .card-header-actions { flex-direction: column; align-items: stretch !important; gap: 0.5rem !important; }
+            .card-header-actions .btn { width: 100%; justify-content: center; }
+
+            /* Step action rows (Назад / Далее) */
+            .step-actions { flex-wrap: wrap; gap: 0.5rem; }
+            .step-actions .btn { flex: 1; min-width: 120px; justify-content: center; }
+
+            /* Modal — bottom sheet on mobile */
+            .modal-overlay { align-items: flex-end !important; padding: 0 !important; }
+            .modal { border-radius: 1.1rem 1.1rem 0 0 !important; max-height: 92vh !important; max-width: 100% !important; width: 100% !important; }
+            .modal-header { padding: 1rem 1.1rem; }
+            .modal-body { padding: 1rem 1.1rem; max-height: 65vh !important; }
+            .modal-footer { padding: 0.75rem 1.1rem; flex-wrap: wrap; gap: 0.5rem; }
+            .modal-footer .btn { flex: 1; justify-content: center; }
+
+            /* History panel — full width */
+            .history-panel { width: 100% !important; max-width: 100% !important; }
+            .history-header { padding: 0.85rem 1rem; }
+            .thread-actions { flex-wrap: wrap; }
+            .thread-actions .btn { flex: 1; justify-content: center; }
+
+            /* Continue URL rows — stack label + input */
+            .continue-url-row { flex-direction: column; align-items: flex-start !important; gap: 0.35rem; }
+            .continue-url-label { width: 100% !important; }
+            .continue-url-input { width: 100%; }
+
+            /* Model row — compact */
+            .model-row { padding: 0.75rem; gap: 0.5rem; }
+
+            /* Answer section header badges — wrap */
+            .answer-section-header-left { flex-wrap: wrap; gap: 0.35rem; }
+
+            /* Result tabs — full width, scrollable */
+            .result-tabs-bar { overflow-x: auto; -webkit-overflow-scrolling: touch; scrollbar-width: none; }
+            .result-tabs-bar::-webkit-scrollbar { display: none; }
+            .tab-btn { white-space: nowrap; flex-shrink: 0; padding: 0.65rem 0.85rem !important; font-size: 0.82rem !important; }
+
+            /* Chat history bubbles */
+            .chat-bubble-user { max-width: 95% !important; }
+            .chat-bubble-ai { max-width: 98% !important; }
+            .chat-history-body { max-height: 320px; padding: 0.75rem; }
+
+            /* Code blocks */
+            .code-block-wrapper pre { padding: 0.85rem !important; padding-top: 2.2rem !important; font-size: 0.8rem; }
+            .code-copy-btn { width: 1.85rem; height: 1.85rem; padding: 0; }
+
+            /* Settings tabs */
+            .settings-tab { padding: 0.55rem 0.9rem; font-size: 0.88rem; }
+
+            /* Scrollable blocks */
+            .scrollable { max-height: 260px; }
+
+            /* Model cards textarea */
+            #modelCardsContainer .textarea { min-height: 100px; }
+        }
+
+        @media (max-width: 768px) {
+            .card-top { flex-direction: column; align-items: flex-start !important; }
+            .card-top > .btn, .card-top > button { width: 100%; justify-content: center; margin-top: 0.4rem; }
+            .card-top > div + .btn { margin-top: 0.5rem; }
+
+            /* Step 5 final answer copy buttons */
+            #result-final .card-top .flex { flex-wrap: wrap; width: 100%; }
+            #result-final .card-top .flex .btn { flex: 1; justify-content: center; }
+
+            /* Model card action buttons */
+            .answer-section-content .flex.flex-wrap { gap: 0.4rem; }
+            .answer-section-content .flex.flex-wrap .btn { flex: 1; min-width: 0; justify-content: center; font-size: 0.8rem; }
+        }
+            .header-title h1 { font-size: 1.1rem !important; }
+            .btn { font-size: 0.82rem; padding: 0.6rem 0.7rem; }
+        }
+
+        [data-theme="dark"] .btn-copy.copied { background: rgba(34,197,94,0.15); color: #4ade80; }
+        [data-theme="dark"] .result-tabs-bar { border-color: var(--border); }
+        [data-theme="dark"] .tab-btn { border-color: transparent; color: var(--text-muted); }
+        [data-theme="dark"] .tab-btn:hover { color: var(--text); }
+        [data-theme="dark"] .border-zinc-200 { border-color: var(--border) !important; }
+        [data-theme="dark"] .text-zinc-500 { color: var(--text-muted) !important; }
+        [data-theme="dark"] .text-zinc-600 { color: var(--text-secondary) !important; }
+        [data-theme="dark"] .text-zinc-700 { color: var(--text-secondary) !important; }
+        [data-theme="dark"] .text-zinc-900 { color: var(--text) !important; }
+        [data-theme="dark"] .text-zinc-300 { color: var(--text-muted) !important; }
+        [data-theme="dark"] .text-zinc-400 { color: var(--text-muted) !important; }
+        [data-theme="dark"] .bg-zinc-900 { background: var(--bg-step-active) !important; }
+        [data-theme="dark"] .border-zinc-900 { border-color: var(--text) !important; }
+        [data-theme="dark"] .hover\:bg-red-50:hover { background: rgba(239,68,68,0.1) !important; }
+        [data-theme="dark"] .border-red-200 { border-color: rgba(239,68,68,0.3) !important; }
+        [data-theme="dark"] .hover\:bg-zinc-100:hover { background: var(--bg-hover) !important; }
+        [data-theme="dark"] .bg-white { background: var(--bg-card) !important; }
+        [data-theme="dark"] .bg-zinc-100 { background: var(--bg-body) !important; }
+        [data-theme="dark"] .bg-zinc-50 { background: var(--bg-card-alt) !important; }
+        [data-theme="dark"] select { background: var(--bg-input); color: var(--text); border-color: var(--border); }
+        /* Tablet adjustments */
+        @media (min-width: 641px) and (max-width: 1024px) {
+            .card { padding: 1.25rem; }
+            .modal-body { max-height: 55vh !important; }
+            .history-panel { width: 340px !important; }
+        }
+
+        /* Safe area for notched phones */
+        /* Theme transition */
+        body, .card, .modal, .history-panel, .btn, .step-btn, .badge, .chat-bubble-user, .chat-bubble-ai, .answer-section, .thread-entry, .model-row, .code-block-wrapper {
+            transition: background-color 0.25s ease, color 0.25s ease, border-color 0.25s ease;
+        }
+        @supports (padding: max(0px)) {
+            .modal-footer { padding-bottom: max(0.75rem, env(safe-area-inset-bottom)); }
+            body { padding-bottom: env(safe-area-inset-bottom); }
+        }
+
+        /* ═══════════════════════════════════════════════════════════════
+           ANIMATIONS — Smooth, pleasant transitions throughout the UI
+           ═══════════════════════════════════════════════════════════════ */
+
+        /* Fade in animation for cards and sections */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .card {
+            animation: fadeIn 0.4s ease-out;
+        }
+
+        .step-content.active {
+            animation: fadeIn 0.3s ease-out;
+        }
+
+        /* Slide in from right for modals */
+        @keyframes slideInRight {
+            from { opacity: 0; transform: translateX(30px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+
+        .modal {
+            animation: slideInRight 0.35s ease-out;
+        }
+
+        /* Scale up animation for buttons on hover */
+        .btn {
+            transition: all 0.2s ease, transform 0.15s ease;
+        }
+
+        .btn:hover {
+            transform: translateY(-1px);
+        }
+
+        .btn:active {
+            transform: translateY(0) scale(0.98);
+        }
+
+        /* Smooth step button transitions */
+        .step-btn {
+            transition: all 0.3s ease, transform 0.15s ease;
+        }
+
+        .step-btn:hover {
+            transform: scale(1.02);
+        }
+
+        /* Chat bubble entrance animation */
+        @keyframes bubbleIn {
+            from { 
+                opacity: 0; 
+                transform: translateY(15px) scale(0.95); 
+            }
+            to { 
+                opacity: 1; 
+                transform: translateY(0) scale(1); 
+            }
+        }
+
+        .chat-bubble-user, .chat-bubble-ai {
+            animation: bubbleIn 0.3s ease-out;
+        }
+
+        /* Thread entry hover animation */
+        .thread-entry {
+            transition: all 0.2s ease, transform 0.15s ease;
+        }
+
+        .thread-entry:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-hover);
+        }
+
+        /* Answer section expand animation */
+        .answer-section {
+            transition: all 0.3s ease;
+        }
+
+        .answer-section:hover {
+            transform: translateY(-1px);
+        }
+
+        /* Model row hover animation */
+        .model-row {
+            transition: all 0.2s ease, transform 0.15s ease;
+        }
+
+        .model-row:hover {
+            transform: translateX(3px);
+        }
+
+        /* Badge pulse animation */
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+
+        .badge {
+            transition: all 0.2s ease;
+        }
+
+        /* Code block wrapper entrance */
+        @keyframes codeBlockIn {
+            from { opacity: 0; transform: scale(0.98); }
+            to { opacity: 1; transform: scale(1); }
+        }
+
+        .code-block-wrapper {
+            animation: codeBlockIn 0.3s ease-out;
+        }
+
+        /* Copy button success animation */
+        @keyframes copySuccess {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+
+        .btn-copy.copied {
+            animation: copySuccess 0.3s ease;
+        }
+
+        /* Tab button transition */
+        .tab-btn {
+            transition: all 0.25s ease;
+        }
+
+        .tab-btn:hover {
+            transform: translateY(-1px);
+        }
+
+        /* Settings tab animation */
+        .settings-tab {
+            transition: all 0.2s ease;
+        }
+
+        .settings-tab:hover {
+            transform: translateY(-1px);
+        }
+
+        /* Input focus animation */
+        .input, .textarea {
+            transition: all 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .input:focus, .textarea:focus {
+            transform: translateY(-1px);
+        }
+
+        /* History panel slide animation */
+        .history-panel {
+            transition: transform 0.35s cubic-bezier(.4,0,.2,1), box-shadow 0.35s ease;
+        }
+
+        /* Overlay fade animation */
+        @keyframes fadeInOverlay {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .history-overlay.open {
+            animation: fadeInOverlay 0.3s ease;
+        }
+
+        .modal-overlay:not(.hidden) {
+            animation: fadeInOverlay 0.3s ease;
+        }
+
+        /* Chat bubble AI collapsed gradient animation */
+        .chat-bubble-ai-collapsed::after {
+            animation: fadeInOverlay 0.3s ease;
+        }
+
+        /* Scroll to bottom animation */
+        @keyframes scrollHint {
+            0%, 100% { opacity: 0.5; transform: translateY(0); }
+            50% { opacity: 1; transform: translateY(3px); }
+        }
+
+        /* Loading spinner animation */
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        /* Arrow pulse animation for step navigation */
+        .arrow {
+            animation: pulse 2s infinite;
+        }
+
+        /* Header wrap animation */
+        .header-wrap {
+            animation: fadeIn 0.5s ease-out;
+        }
+
+        /* Step navigation animation */
+        .step-nav-wrap {
+            animation: fadeIn 0.4s ease-out 0.1s both;
+        }
+
+        /* Card primary border animation */
+        .card-primary {
+            transition: border-color 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .card-primary:hover {
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.15);
+        }
+
+        /* Continuation badge animation */
+        .continuation-badge {
+            animation: fadeIn 0.3s ease-out;
+        }
+
+        /* Empty state animation */
+        .history-empty {
+            animation: fadeIn 0.5s ease-out;
+        }
+
+        /* Thread turn row hover */
+        .thread-turn-row {
+            transition: background-color 0.15s ease;
+        }
+
+        .thread-turn-row:hover {
+            background: var(--bg-hover);
+        }
+
+        /* Continue URL input focus */
+        .continue-url-input {
+            transition: all 0.2s ease;
+        }
+
+        .continue-url-input:focus {
+            transform: translateY(-1px);
+        }
+
+        /* Modal overlay backdrop blur effect */
+        .modal-overlay {
+            backdrop-filter: blur(4px);
+            -webkit-backdrop-filter: blur(4px);
+        }
+
+        /* History overlay subtle blur */
+        .history-overlay {
+            backdrop-filter: blur(2px);
+            -webkit-backdrop-filter: blur(2px);
+        }
+
+        /* ═══════════════════════════════════════════════════════════════
+           ADDITIONAL SMOOTH ANIMATIONS — Enhanced UI polish
+           ═══════════════════════════════════════════════════════════════ */
+
+        /* Smooth glow effect on input focus */
+        @keyframes glowPulse {
+            0%, 100% { box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1); }
+            50% { box-shadow: 0 0 0 5px rgba(59, 130, 246, 0.15); }
+        }
+
+        .input:focus, .textarea:focus {
+            animation: glowPulse 1.5s ease-in-out infinite;
+        }
+
+        /* Smooth card entrance with stagger */
+        .card:nth-child(1) { animation-delay: 0s; }
+        .card:nth-child(2) { animation-delay: 0.1s; }
+        .card:nth-child(3) { animation-delay: 0.2s; }
+
+        @keyframes cardEntrance {
+            from { 
+                opacity: 0; 
+                transform: translateY(20px) scale(0.98); 
+            }
+            to { 
+                opacity: 1; 
+                transform: translateY(0) scale(1); 
+            }
+        }
+
+        .card {
+            animation: cardEntrance 0.5s ease-out both;
+        }
+
+        /* Smooth button press effect */
+        .btn {
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            transition: width 0.3s, height 0.3s;
+        }
+
+        .btn:active::after {
+            width: 200px;
+            height: 200px;
+        }
+
+        /* Smooth step transition */
+        @keyframes stepFadeIn {
+            from { 
+                opacity: 0; 
+                transform: translateX(20px); 
+            }
+            to { 
+                opacity: 1; 
+                transform: translateX(0); 
+            }
+        }
+
+        .step-content.active {
+            animation: stepFadeIn 0.4s ease-out;
+        }
+
+        /* Chat bubble appear animation with bounce */
+        @keyframes bubbleBounce {
+            0% { 
+                opacity: 0; 
+                transform: translateY(20px) scale(0.9); 
+            }
+            60% { 
+                transform: translateY(-5px) scale(1.02); 
+            }
+            100% { 
+                opacity: 1; 
+                transform: translateY(0) scale(1); 
+            }
+        }
+
+        .chat-bubble-user, .chat-bubble-ai {
+            animation: bubbleBounce 0.4s ease-out;
+        }
+
+        /* Smooth loading pulse for buttons */
+        @keyframes loadingPulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.6; }
+        }
+
+        .btn:disabled {
+            animation: loadingPulse 1.5s ease-in-out infinite;
+        }
+
+        /* Step button hover lift effect */
+        .step-btn {
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            transition: all 0.25s ease, transform 0.15s ease, box-shadow 0.25s ease;
+        }
+
+        .step-btn:hover {
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+
+        /* Smooth answer section expand */
+        @keyframes expandSmooth {
+            from { 
+                opacity: 0;
+                max-height: 0;
+            }
+            to { 
+                opacity: 1;
+                max-height: 1000px;
+            }
+        }
+
+        .answer-section-content:not(.collapsed) {
+            animation: expandSmooth 0.3s ease-out;
+        }
+
+        /* Subtle badge pop animation */
+        @keyframes badgePop {
+            0% { transform: scale(0.8); opacity: 0; }
+            60% { transform: scale(1.1); }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        .badge {
+            animation: badgePop 0.3s ease-out;
+        }
+
+        /* Smooth thread entry slide in */
+        @keyframes slideInThread {
+            from { 
+                opacity: 0; 
+                transform: translateX(30px); 
+            }
+            to { 
+                opacity: 1; 
+                transform: translateX(0); 
+            }
+        }
+
+        .thread-entry {
+            animation: slideInThread 0.3s ease-out;
+        }
+
+        /* Smooth model row entrance */
+        @keyframes modelRowSlide {
+            from { 
+                opacity: 0; 
+                transform: translateX(-10px); 
+            }
+            to { 
+                opacity: 1; 
+                transform: translateX(0); 
+            }
+        }
+
+        .model-row {
+            animation: modelRowSlide 0.25s ease-out;
+        }
+
+        /* Smooth continuation badge */
+        @keyframes badgeGlow {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.4); }
+            50% { box-shadow: 0 0 0 4px rgba(59, 130, 246, 0); }
+        }
+
+        .continuation-badge {
+            animation: badgeGlow 2s ease-in-out infinite;
+        }
+
+        /* Smooth input label animation */
+        .input:focus + label, .textarea:focus + label {
+            transform: translateY(-2px);
+            transition: transform 0.2s ease;
+        }
+
+        /* Smooth chat turn appear */
+        @keyframes chatTurnIn {
+            from { 
+                opacity: 0; 
+                transform: translateY(10px); 
+            }
+            to { 
+                opacity: 1; 
+                transform: translateY(0); 
+            }
+        }
+
+        .chat-turn {
+            animation: chatTurnIn 0.4s ease-out;
+        }
+
+        /* Smooth arrow bounce */
+        @keyframes arrowBounce {
+            0%, 100% { transform: translateX(0); }
+            50% { transform: translateX(3px); }
+        }
+
+        .arrow {
+            animation: arrowBounce 1.5s ease-in-out infinite, pulse 2s infinite;
+        }
+
+        /* Smooth code block entrance */
+        @keyframes codeFadeIn {
+            from { 
+                opacity: 0; 
+                transform: scale(0.95); 
+            }
+            to { 
+                opacity: 1; 
+                transform: scale(1); 
+            }
+        }
+
+        .code-block {
+            animation: codeFadeIn 0.35s ease-out;
+        }
+
+        /* Smooth tab transition */
+        @keyframes tabSlide {
+            from { 
+                opacity: 0; 
+                transform: translateY(5px); 
+            }
+            to { 
+                opacity: 1; 
+                transform: translateY(0); 
+            }
+        }
+
+        .result-tab:not(.hidden) {
+            animation: tabSlide 0.3s ease-out;
+        }
+
+        /* Smooth modal content entrance */
+        @keyframes modalContentIn {
+            from { 
+                opacity: 0; 
+                transform: scale(0.95) translateY(10px); 
+            }
+            to { 
+                opacity: 1; 
+                transform: scale(1) translateY(0); 
+            }
+        }
+
+        .modal-body {
+            animation: modalContentIn 0.3s ease-out 0.1s both;
+        }
+
+        /* Smooth history empty state */
+        @keyframes emptyStateFade {
+            from { opacity: 0; transform: scale(0.9); }
+            to { opacity: 1; transform: scale(1); }
+        }
+
+        .history-empty {
+            animation: emptyStateFade 0.5s ease-out;
+        }
+
+        /* Smooth hover lift for interactive elements */
+        .btn:hover, .step-btn:hover, .model-row:hover, .thread-entry:hover, .answer-section:hover {
+            transition: all 0.2s ease, transform 0.15s ease;
+        }
+
+        /* Smooth focus ring animation */
+        @keyframes focusRing {
+            0% { box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.4); }
+            100% { box-shadow: 0 0 0 4px rgba(59, 130, 246, 0); }
+        }
+
+        .btn:focus, .input:focus, .textarea:focus {
+            animation: focusRing 0.4s ease-out;
+        }
+
+        /* Smooth scroll hint animation */
+        @keyframes scrollDown {
+            0%, 100% { transform: translateY(0); opacity: 0.5; }
+            50% { transform: translateY(5px); opacity: 1; }
+        }
+
+        /* Smooth loading state for async operations */
+        @keyframes shimmer {
+            0% { background-position: -200% 0; }
+            100% { background-position: 200% 0; }
+        }
+
+        .loading-shimmer {
+            background: linear-gradient(90deg, var(--bg-card) 25%, var(--bg-hover) 50%, var(--bg-card) 75%);
+            background-size: 200% 100%;
+            animation: shimmer 1.5s infinite;
+        }
+
+        /* ═══════════════════════════════════════════════════════════════
+           AUTO-SAVE INDICATOR
+           ═══════════════════════════════════════════════════════════════ */
+        .autosave-indicator {
+            position: fixed;
+            top: 1rem;
+            right: 1rem;
+            z-index: 100;
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+            padding: 0.35rem 0.7rem;
+            border-radius: 0.4rem;
+            font-size: 0.75rem;
+            font-weight: 500;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            color: var(--text-muted);
+            opacity: 0;
+            transform: translateY(-10px);
+            transition: opacity 0.3s ease, transform 0.3s ease;
+            pointer-events: none;
+        }
+        .autosave-indicator.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        .autosave-indicator.saved {
+            color: var(--text-green);
+            border-color: #bbf7d0;
+        }
+        .autosave-indicator.warning {
+            color: #a16207;
+            border-color: #fcd34d;
+        }
+        .autosave-indicator.error {
+            color: var(--text-red);
+            border-color: #fca5a5;
+        }
+        [data-theme="dark"] .autosave-indicator.saved {
+            border-color: rgba(34,197,94,0.3);
+        }
+        [data-theme="dark"] .autosave-indicator.warning {
+            color: #facc15;
+            border-color: rgba(250,204,21,0.35);
+        }
+        [data-theme="dark"] .autosave-indicator.error {
+            border-color: rgba(248,113,113,0.35);
+        }
+        .autosave-dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: var(--text-muted);
+        }
+        .autosave-indicator.saving .autosave-dot {
+            background: #facc15;
+            animation: pulse 1s infinite;
+        }
+        .autosave-indicator.saved .autosave-dot {
+            background: #22c55e;
+        }
+        .autosave-indicator.warning .autosave-dot {
+            background: #f59e0b;
+        }
+        .autosave-indicator.error .autosave-dot {
+            background: #ef4444;
+        }
+
+        /* ═══════════════════════════════════════════════════════════════
+           STAR RATING SYSTEM
+           ═══════════════════════════════════════════════════════════════ */
+        .star-rating {
+            display: inline-flex;
+            gap: 0.15rem;
+            align-items: center;
+        }
+        .star-btn {
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 0.1rem;
+            font-size: 1.1rem;
+            color: var(--text-placeholder);
+            transition: transform 0.15s ease, color 0.15s ease;
+            line-height: 1;
+        }
+        .star-btn:hover {
+            transform: scale(1.2);
+        }
+        .star-btn.filled {
+            color: #facc15;
+        }
+        .star-btn.hovered {
+            color: #fde68a;
+        }
+        .rating-label {
+            font-size: 0.72rem;
+            color: var(--text-muted);
+            margin-left: 0.4rem;
+        }
+
+        /* ═══════════════════════════════════════════════════════════════
+           SIDE-BY-SIDE COMPARISON
+           ═══════════════════════════════════════════════════════════════ */
+        .comparison-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 1rem;
+        }
+        .comparison-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 0.6rem;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            animation: fadeIn 0.3s ease-out;
+        }
+        .comparison-card-header {
+            padding: 0.75rem 1rem;
+            background: var(--bg-card-alt);
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 0.5rem;
+        }
+        .comparison-card-body {
+            padding: 1rem;
+            flex: 1;
+            overflow-y: auto;
+            max-height: 350px;
+        }
+        .comparison-card-body .md-content {
+            font-size: 0.875rem;
+            line-height: 1.6;
+        }
+        .comparison-card-footer {
+            padding: 0.6rem 1rem;
+            border-top: 1px solid var(--border);
+            background: var(--bg-card-alt);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .comparison-empty {
+            text-align: center;
+            padding: 3rem 1rem;
+            color: var(--text-placeholder);
+            font-size: 0.9rem;
+        }
+        @media (max-width: 768px) {
+            .comparison-grid {
+                grid-template-columns: 1fr;
+            }
+            .comparison-card-body {
+                max-height: 250px;
+            }
+        }
+    </style>
+</head>
+<body style="background: linear-gradient(to bottom, var(--bg-gradient-from), var(--bg-gradient-to)); min-height: 100vh;">
+    <!-- Auto-save indicator -->
+    <div id="autosaveIndicator" class="autosave-indicator">
+        <div class="autosave-dot"></div>
+        <span id="autosaveText">Сохранено</span>
+    </div>
+    <div class="max-w-5xl mx-auto px-5 py-8">
+        <!-- Header -->
+        <div class="header-wrap flex mb-5">
+            <div class="header-btn-group">
+                <button onclick="openHistory()" class="btn btn-outline btn-sm" title="История запросов">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                    <span class="hidden sm:inline">История</span>
+                </button>
+            </div>
+            <div class="header-title flex-1 text-center px-2">
+                <div class="flex items-center justify-center gap-2 mb-1">
+                    <svg class="w-6 h-6 sm:w-8 sm:h-8 text-zinc-900" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"></path>
+                    </svg>
+                    <h1 class="text-2xl sm:text-3xl font-bold">Multi-LLM + Синтез</h1>
+                </div>
+                <p class="text-zinc-500 text-sm hidden sm:block">Ручной режим: копируйте промты → вставляйте ответы → получайте результат</p>
+            </div>
+            <div class="header-btn-group">
+                <button onclick="toggleTheme()" class="btn btn-outline btn-sm" id="themeToggle" title="Переключить тему">
+                    <svg id="themeIconLight" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path></svg>
+                    <svg id="themeIconDark" class="w-4 h-4 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>
+                </button>
+                <button onclick="openSettings()" class="btn btn-outline btn-sm" title="Настройки">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+                    <span class="hidden sm:inline">Настройки</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Step Navigation -->
+        <div class="step-nav-wrap flex items-center justify-center gap-2 mb-6">
+            <button class="step-btn active px-4 py-2.5 rounded-lg text-sm flex items-center gap-2" onclick="setStep(1)">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path></svg>
+                <span>Запрос</span>
+            </button>
+            <span class="arrow step-nav-arrows">→</span>
+            <button class="step-btn px-4 py-2.5 rounded-lg text-sm flex items-center gap-2" onclick="setStep(2)">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"></path></svg>
+                <span>Улучшение</span>
+            </button>
+            <span class="arrow step-nav-arrows">→</span>
+            <button class="step-btn px-4 py-2.5 rounded-lg text-sm flex items-center gap-2" onclick="setStep(3)">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+                <span>Модели</span>
+            </button>
+            <span class="arrow step-nav-arrows">→</span>
+            <button class="step-btn px-4 py-2.5 rounded-lg text-sm flex items-center gap-2" onclick="setStep(4)">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"></path></svg>
+                <span>Синтез</span>
+            </button>
+            <span class="arrow step-nav-arrows">→</span>
+            <button class="step-btn px-4 py-2.5 rounded-lg text-sm flex items-center gap-2" onclick="setStep(5)">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+                <span>Результат</span>
+            </button>
+        </div>
+
+        <!-- Step 1: Raw Prompt -->
+        <div id="step-1" class="step-content active">
+            <!-- In-thread chat history (shown when continuing) -->
+            <div id="chatHistoryWrap" class="chat-history-wrap hidden">
+                <div class="chat-history-head">
+                    <div class="flex items-center gap-2">
+                        <svg class="w-4 h-4 text-zinc-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path></svg>
+                        <span class="font-medium text-sm text-zinc-700" id="chatHistoryTitle">История чата</span>
+                    </div>
+                    <button onclick="resetAll()" class="btn btn-outline btn-sm text-xs">
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+                        Новый чат
+                    </button>
+                </div>
+                <div class="chat-history-body" id="chatHistoryBody"></div>
+            </div>
+            <div class="card">
+                <h2 class="text-xl font-semibold mb-1 flex items-center gap-2">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path></svg>
+                    <span id="step1Title">Шаг 1: Ваш сырой запрос</span>
+                </h2>
+                <p class="text-zinc-500 text-sm mb-4" id="step1Hint">Введите ваш исходный вопрос или задачу</p>
+                <textarea id="rawPrompt" class="textarea" placeholder="Например: Как работает квантовая запутанность?"></textarea>
+                <div class="step-actions flex justify-between items-center mt-4">
+                    <span id="modelsCount" class="text-base text-zinc-500"></span>
+                    <button class="btn btn-primary" onclick="setStep(2)">
+                        Далее: Улучшение
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Step 2: Improve Prompt -->
+        <div id="step-2" class="step-content">
+            <div class="card card-primary">
+                <div class="card-top flex items-start justify-between mb-3 gap-2 flex-wrap">
+                    <div>
+                        <h2 class="text-xl font-semibold flex items-center gap-2">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg>
+                            Системный промт для улучшения
+                        </h2>
+                        <p class="text-zinc-500 text-base">1. Скопируйте этот системный промт</p>
+                    </div>
+                    <button id="copy-enhancer-sys" class="btn btn-copy btn-icon" data-icon-size="w-4 h-4" title="Скопировать системный промт" aria-label="Скопировать системный промт" onclick="copyText('ENHANCER_SYSTEM', 'copy-enhancer-sys')">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg>
+                    </button>
+                </div>
+                <div class="code-block scrollable" id="enhancerSystemDisplay"></div>
+            </div>
+
+            <div class="card">
+                <div class="card-top flex items-start justify-between mb-3 gap-2 flex-wrap">
+                    <div>
+                        <h2 class="text-xl font-semibold">Промт для отправки</h2>
+                        <p class="text-zinc-500 text-base">2. Скопируйте и отправьте вместе с системным промтом</p>
+                    </div>
+                    <button id="copy-enhancer-user" class="btn btn-copy btn-icon" data-icon-size="w-4 h-4" title="Скопировать промт для улучшения" aria-label="Скопировать промт для улучшения" onclick="copyText(generateEnhancerUserPrompt(), 'copy-enhancer-user')">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg>
+                    </button>
+                </div>
+                <div class="code-block" id="enhancerUserPrompt"></div>
+            </div>
+
+            <div class="card">
+                <h2 class="text-xl font-semibold mb-1 flex items-center gap-2">
+                    <svg class="w-5 h-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"></path></svg>
+                    3. Вставьте улучшенный промт
+                </h2>
+                <p class="text-zinc-500 text-sm mb-4">Вставьте сюда ответ от ИИ (улучшенный промт)</p>
+                <textarea id="improvedPrompt" class="textarea" placeholder="Вставьте улучшенный промт сюда..."></textarea>
+                <div class="step-actions flex justify-between mt-4">
+                    <button class="btn btn-outline" onclick="setStep(1)">Назад</button>
+                    <button class="btn btn-primary" onclick="setStep(3)">
+                        Далее: Модели
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Step 3: Model Answers -->
+        <div id="step-3" class="step-content">
+            <div class="card card-primary">
+                <div class="card-top flex items-start justify-between mb-3 gap-2 flex-wrap">
+                    <div>
+                        <h2 class="text-xl font-semibold">Улучшенный промт для отправки в модели</h2>
+                        <p class="text-zinc-500 text-base">Отправьте этот промт в каждую модель ниже</p>
+                    </div>
+                    <button id="copy-improved" class="btn btn-copy btn-icon" data-icon-size="w-4 h-4" title="Скопировать улучшенный промт" aria-label="Скопировать улучшенный промт" onclick="copyText(document.getElementById('improvedPrompt').value, 'copy-improved')">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg>
+                    </button>
+                </div>
+                <div class="code-block scrollable" id="improvedPromptDisplay"></div>
+            </div>
+
+            <!-- Dynamic Model Cards Container -->
+            <div id="modelCardsContainer"></div>
+
+            <div class="step-actions flex justify-between mt-4">
+                <button class="btn btn-outline" onclick="setStep(2)">Назад</button>
+                <button class="btn btn-primary" onclick="setStep(4)">
+                    Далее: Синтез
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
+                </button>
+            </div>
+        </div>
+
+        <!-- Step 4: Synthesis -->
+        <div id="step-4" class="step-content">
+            <div class="card card-primary">
+                <div class="card-top flex items-start justify-between mb-3 gap-2 flex-wrap">
+                    <div>
+                        <h2 class="text-xl font-semibold flex items-center gap-2">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg>
+                            Системный промт для агрегации
+                        </h2>
+                        <p class="text-zinc-500 text-base">1. Скопируйте этот системный промт</p>
+                    </div>
+                    <button id="copy-aggregator-sys" class="btn btn-copy btn-icon" data-icon-size="w-4 h-4" title="Скопировать системный промт для агрегации" aria-label="Скопировать системный промт для агрегации" onclick="copyText('AGGREGATOR_SYSTEM', 'copy-aggregator-sys')">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg>
+                    </button>
+                </div>
+                <div class="code-block scrollable" id="aggregatorSystemDisplay"></div>
+            </div>
+
+            <div class="card">
+                <div class="card-top flex items-start justify-between mb-3 gap-2 flex-wrap">
+                    <div>
+                        <h2 class="text-xl font-semibold">Промт с ответами моделей</h2>
+                        <p class="text-zinc-500 text-base">2. Скопируйте и отправьте вместе с системным промтом</p>
+                    </div>
+                    <button id="copy-aggregator-user" class="btn btn-copy btn-icon" data-icon-size="w-4 h-4" title="Скопировать промт для агрегации" aria-label="Скопировать промт для агрегации" onclick="copyText(generateAggregatorPrompt(), 'copy-aggregator-user')">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg>
+                    </button>
+                </div>
+                <div class="code-block" id="aggregatorPromptDisplay"></div>
+            </div>
+
+            <div class="card">
+                <h2 class="text-xl font-semibold mb-1 flex items-center gap-2">
+                    <svg class="w-5 h-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"></path></svg>
+                    3. Вставьте синтезированный ответ
+                </h2>
+                <p class="text-zinc-500 text-sm mb-4">Вставьте сюда финальный агрегированный ответ</p>
+                <textarea id="finalAnswer" class="textarea" style="min-height: 180px;" placeholder="Вставьте синтезированный ответ..."></textarea>
+                <div class="step-actions flex justify-between mt-4">
+                    <button class="btn btn-outline" onclick="setStep(3)">Назад</button>
+                    <button class="btn btn-primary" onclick="setStep(5)">
+                        Далее: Результат
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Step 5: Result -->
+        <div id="step-5" class="step-content">
+            <!-- Tabs -->
+            <div class="result-tabs-bar flex border-b border-zinc-200 mb-4 overflow-x-auto">
+                <button class="tab-btn px-5 py-3 text-base font-medium border-b-2 border-zinc-900 text-zinc-900" onclick="setResultTab('final', event)">Финальный ответ</button>
+                <button class="tab-btn px-5 py-3 text-base font-medium border-b-2 border-transparent text-zinc-500 hover:text-zinc-900" onclick="setResultTab('comparison', event)">Сравнение</button>
+                <button class="tab-btn px-5 py-3 text-base font-medium border-b-2 border-transparent text-zinc-500 hover:text-zinc-900" onclick="setResultTab('json', event)">JSON</button>
+            </div>
+
+            <!-- Final Answer Tab -->
+            <div id="result-final" class="result-tab">
+                <div class="card card-primary">
+                    <div class="card-top flex items-center justify-between mb-3 gap-2 flex-wrap">
+                        <h2 class="text-xl font-semibold flex items-center gap-2">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"></path></svg>
+                            Синтезированный ответ
+                        </h2>
+                        <div class="flex gap-2">
+                            <button id="copy-final" class="btn btn-copy btn-icon" data-icon-size="w-4 h-4" title="Скопировать финальный ответ" aria-label="Скопировать финальный ответ" onclick="copyText(document.getElementById('finalAnswer').value, 'copy-final')">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg>
+                            </button>
+                        </div>
+                    </div>
+                    <div id="finalAnswerDisplay"></div>
+                </div>
+            </div>
+
+            <!-- Comparison Tab -->
+            <div id="result-comparison" class="result-tab hidden">
+                <div class="card">
+                    <div class="card-top flex items-center justify-between mb-3 gap-2 flex-wrap">
+                        <h2 class="text-xl font-semibold">Сравнение ответов моделей</h2>
+                        <div class="flex items-center gap-2">
+                            <span class="text-sm text-zinc-500">Средняя оценка: <strong id="avgRatingDisplay">0</strong>/5</span>
+                        </div>
+                    </div>
+                    <div class="comparison-grid" id="comparisonGrid"></div>
+                </div>
+            </div>
+
+            <!-- JSON Tab -->
+            <div id="result-json" class="result-tab hidden">
+                <div class="card">
+                    <div class="card-top flex items-center justify-between mb-3 gap-2 flex-wrap">
+                        <h2 class="text-xl font-semibold">Итоговый JSON</h2>
+                        <div class="flex gap-2">
+                            <button id="copy-json" class="btn btn-copy btn-icon" data-icon-size="w-4 h-4" title="Скопировать JSON" aria-label="Скопировать JSON" onclick="copyText(generateResultJSON(), 'copy-json')">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg>
+                            </button>
+                        </div>
+                    </div>
+                    <pre class="code-block scrollable" id="resultJSONDisplay" style="max-height: 400px;"></pre>
+                </div>
+            </div>
+
+            <div class="step-actions flex justify-between mt-4">
+                <button class="btn btn-outline" onclick="setStep(4)">Назад</button>
+                <div class="flex gap-2">
+                    <button class="btn btn-outline" onclick="openContinueModal()">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path></svg>
+                        Продолжить чат
+                    </button>
+                    <button class="btn btn-primary" onclick="resetAll()">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+                        Новый запрос
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Settings Modal -->
+    <div id="settingsModal" class="modal-overlay hidden">
+        <div class="modal">
+            <div class="modal-header">
+                <h2 class="text-xl font-semibold">Настройки</h2>
+                <button onclick="closeSettings()" class="text-zinc-400 hover:text-zinc-600">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                </button>
+            </div>
+            
+            <!-- Settings Tabs -->
+            <div class="flex border-b border-zinc-200 px-6 pt-4">
+                <button class="settings-tab active" onclick="setSettingsTab('general')">Общие</button>
+                <button class="settings-tab" onclick="setSettingsTab('models')">Модели</button>
+                <button class="settings-tab" onclick="setSettingsTab('prompts')">Промты</button>
+                <button class="settings-tab" onclick="setSettingsTab('templates')">Шаблоны</button>
+            </div>
+
+            <!-- General Tab -->
+            <div id="settings-general" class="tab-pane active">
+                <div class="modal-body space-y-6">
+                    <div class="card" style="margin:0; padding:1.25rem;">
+                        <label class="flex items-start gap-3 cursor-pointer">
+                            <input type="checkbox" id="notificationsEnabledToggle" class="mt-1">
+                            <div>
+                                <div class="text-sm font-medium">Системные уведомления</div>
+                                <p class="text-xs text-zinc-500 mt-1">Показывать индикатор автосохранения и неблокирующие предупреждения.</p>
+                            </div>
+                        </label>
+                    </div>
+                    <div class="card" style="margin:0; padding:1.25rem;">
+                        <label class="flex items-start gap-3 cursor-pointer">
+                            <input type="checkbox" id="useRatingsInSynthesisToggle" class="mt-1">
+                            <div>
+                                <div class="text-sm font-medium">Учитывать оценки в синтезе</div>
+                                <p class="text-xs text-zinc-500 mt-1">Передавать оценки пользователя в агрегирующий промт как мягкий сигнал предпочтения. Если оценка не указана, это считается нейтральным случаем, а не минусом.</p>
+                            </div>
+                        </label>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Models Tab -->
+            <div id="settings-models" class="tab-pane">
+                <div class="modal-body">
+                    <div class="flex flex-wrap items-center justify-between gap-2 mb-3">
+                        <span class="text-sm text-zinc-500 whitespace-nowrap" id="modelsListCount"></span>
+                        <div class="flex gap-2 flex-wrap">
+                            <button onclick="restoreDefaultModels()" class="btn btn-outline btn-sm" title="Восстановить умолчания">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+                                Вернуть умолчания
+                            </button>
+                            <button onclick="deleteSelectedModels()" class="btn btn-danger btn-sm" title="Удалить выбранные" id="deleteSelectedBtn" disabled>
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                                Удалить выбранные
+                            </button>
+                            <button onclick="deleteAllModels()" class="btn btn-danger btn-sm" title="Удалить все">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                                Удалить все
+                            </button>
+                        </div>
+                    </div>
+                    <div id="modelsList"></div>
+                    
+                    <div class="mt-4 pt-4 border-t border-zinc-200">
+                        <h3 class="text-sm font-medium mb-3">Добавить модель</h3>
+                        <div class="space-y-3">
+                            <div>
+                                <label class="block text-sm text-zinc-600 mb-1">Название</label>
+                                <input type="text" id="newModelName" class="input" placeholder="GPT">
+                            </div>
+                            <div>
+                                <label class="block text-sm text-zinc-600 mb-1">Провайдер</label>
+                                <input type="text" id="newModelProvider" class="input" placeholder="OpenAI">
+                            </div>
+                            <div>
+                                <label class="block text-sm text-zinc-600 mb-1">Системный промт (опционально)</label>
+                                <textarea id="newModelSystemPrompt" class="input" rows="3" placeholder="Оставьте пустым для использования общего промта"></textarea>
+                            </div>
+                            <div>
+                                <label class="block text-sm text-zinc-600 mb-1">Ссылка на чат (опционально)</label>
+                                <input type="url" id="newModelChatUrl" class="input" placeholder="https://example.com/chat">
+                            </div>
+                            <button onclick="addModel()" class="btn btn-primary w-full">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+                                Добавить модель
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Prompts Tab -->
+            <div id="settings-prompts" class="tab-pane">
+                <div class="modal-body space-y-6">
+                    <div>
+                        <div class="flex items-center justify-between mb-2">
+                            <label class="block text-sm font-medium">Промт для улучшения</label>
+                            <button onclick="resetEnhancerPrompt()" class="text-xs text-blue-600 hover:underline">Сбросить</button>
+                        </div>
+                        <textarea id="settingsEnhancerPrompt" class="textarea" style="min-height: 150px;"></textarea>
+                    </div>
+                    <div>
+                        <div class="flex items-center justify-between mb-2">
+                            <label class="block text-sm font-medium">Промт для агрегации</label>
+                            <button onclick="resetAggregatorPrompt()" class="text-xs text-blue-600 hover:underline">Сбросить</button>
+                        </div>
+                        <textarea id="settingsAggregatorPrompt" class="textarea" style="min-height: 150px;" ></textarea>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Templates Tab -->
+            <div id="settings-templates" class="tab-pane">
+                <div class="modal-body space-y-6">
+                    <div>
+                        <h3 class="text-sm font-medium mb-3">Сохранённые шаблоны промтов</h3>
+                        <p class="text-xs text-zinc-500 mb-4">Шаблоны можно использовать как начальные точки для новых запросов</p>
+                        <div id="templatesList"></div>
+                        <button onclick="addTemplate()" class="btn btn-outline btn-sm w-full mt-3">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+                            Добавить шаблон
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="modal-footer">
+                <button onclick="closeSettings()" class="btn btn-outline">Закрыть</button>
+                <button onclick="saveSettings()" class="btn btn-primary">Сохранить</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Continue Chat Modal -->
+    <div id="continueModal" class="modal-overlay hidden">
+        <div class="modal" style="max-width:600px;">
+            <div class="modal-header">
+                <div>
+                    <h2 class="text-xl font-semibold">Продолжить чат</h2>
+                    <p class="text-sm text-zinc-500 mt-0.5">Вставьте ссылки на существующие чаты, чтобы ИИ помнил контекст. Можно оставить пустыми — откроются новые чаты.</p>
+                </div>
+                <button onclick="closeContinueModal()" class="text-zinc-400 hover:text-zinc-600 ml-4">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                </button>
+            </div>
+            <div class="modal-body" style="max-height:55vh;">
+                <div id="continueUrlList"></div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-outline" onclick="closeContinueModal()">Отмена</button>
+                <button class="btn btn-primary" onclick="submitContinue()">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
+                    Продолжить
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- History Overlay -->
+    <div id="historyOverlay" class="history-overlay" onclick="closeHistory()"></div>
+
+        <!-- History Panel -->
+        <div id="historyPanel" class="history-panel">
+            <div class="history-header">
+                <div class="flex items-center gap-2">
+                    <svg class="w-5 h-5 text-zinc-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                    <h2 class="text-lg font-semibold">История запросов</h2>
+                </div>
+                <div class="flex items-center gap-2">
+                    <button onclick="exportHistory()" class="btn btn-outline btn-sm" title="Экспорт истории">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+                    </button>
+                    <button onclick="importHistory()" class="btn btn-outline btn-sm" title="Импорт истории">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path></svg>
+                    </button>
+                    <button onclick="clearHistory()" class="btn btn-outline btn-sm text-red-500 border-red-200 hover:bg-red-50" title="Очистить историю">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                    </button>
+                    <button onclick="closeHistory()" class="text-zinc-400 hover:text-zinc-600">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                    </button>
+                </div>
+            </div>
+            <!-- Search -->
+            <div class="px-4 py-2 border-b border-[var(--border)]">
+                <div class="relative">
+                    <svg class="w-4 h-4 absolute left-3 top-1/2 transform -translate-y-1/2 text-[var(--text-muted)]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                    <input type="text" id="historySearch" class="input pl-9 text-sm" placeholder="Поиск по истории..." oninput="filterHistory()">
+                </div>
+            </div>
+            <div class="history-body" id="historyList">
+                <div class="history-empty">
+                <svg class="w-10 h-10 mx-auto mb-3 text-zinc-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                <p>История пуста</p>
+                <p class="text-xs mt-1">Завершённые сессии появятся здесь</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Default prompts
+        const DEFAULT_ENHANCER_SYSTEM = `Ты — архитектор и оптимизатор промтов для больших языковых моделей. Твоя задача — на основе описания пользователя создать один максимально точный, понятный и эффективный промт, который ИИ сможет правильно выполнить с первого раза без дополнительных уточнений.
+
+ВХОДНЫЕ ДАННЫЕ
+
+Пользователь описывает задачу, цель, идею или проблему (в любой форме и степени детализации).
+
+
+ЦЕЛЬ
+
+Создать один самодостаточный промт, который:
+- точно передаёт намерение пользователя,
+- минимизирует вероятность ошибок и неправильной интерпретации,
+- задаёт чёткие ожидания к результату,
+- даёт ИИ все необходимые ориентиры для качественного ответа.
+
+
+АЛГОРИТМ РАБОТЫ (выполняй внутренне, не показывай)
+
+1. Глубокий разбор задачи
+- Определи реальную цель (что считается успешным результатом).
+- Выяви контекст, аудиторию и сценарий использования.
+- Определи тип задачи (анализ, генерация, объяснение, код, сравнение и т.д.).
+- Найди неявные требования, которые пользователь мог не сформулировать.
+- Учти типичные ошибки ИИ в подобных задачах.
+
+2. Проектирование структуры промта
+Выбери только необходимые элементы
+- Роль (кто ИИ и с каким уровнем экспертизы)
+- Контекст (что важно знать)
+- Цель (конкретный результат)
+- Алгоритм (если задача многошаговая)
+- Формат ответа (структура, язык, объём)
+- Стиль (тон, уровень сложности)
+- Ограничения (что исключить, чего избегать)
+- Уточнения (если критично)
+
+Не добавляй элементы ради полноты — только если они реально улучшают результат.
+
+3. Оптимизация
+- Устрани двусмысленности и расплывчатость.
+- Замени абстрактные формулировки на конкретные инструкции.
+- Убедись, что промт не допускает двойной интерпретации.
+- Сделай требования к результату проверяемыми.
+- Удали всё лишнее, что не влияет на качество ответа.
+
+
+ТРЕБОВАНИЯ К ФИНАЛЬНОМУ ПРОМТУ
+
+- Самодостаточный: не требует пояснений извне.
+- Однозначный: минимизирует риск неправильного понимания.
+- Практичный: сразу применим без доработки.
+- Адаптивный: работает как для простых, так и для сложных входных данных.
+- Чётко задаёт
+  - что делать,
+  - как делать,
+  - в каком формате выдать результат.
+
+
+ПРАВИЛА ВЫВОДА
+
+- Выводи ТОЛЬКО готовый промт.
+- Без объяснений, комментариев и мета-текста.
+- Пиши от первого лица (как будто пользователь сам формулирует запрос).
+- Сохраняй язык исходного запроса.
+- Не искажай исходное намерение.
+- Если исходный запрос уже качественный — улучшай минимально, не усложняй.
+
+
+ФИНАЛЬНЫЙ ПРИНЦИП
+
+Ты не переписываешь текст — ты проектируешь инструмент мышления для ИИ.
+Каждое слово в промте должно повышать точность, предсказуемость и качество результата.
+
+Жди описание задачи от пользователя.`;
+
+        const DEFAULT_AGGREGATOR_SYSTEM = `Ты — синтезатор ответов нескольких ИИ-моделей. Твоя задача — на основе исходного вопроса и набора ответов разных моделей создать единый, точный, связный и полезный финальный ответ.
+
+ВХОДНЫЕ ДАННЫЕ
+
+1. Исходный вопрос пользователя.
+2. Ответы нескольких моделей.
+
+
+ЦЕЛЬ
+
+Собрать лучший возможный ответ, объединив сильные стороны разных вариантов, убрав повторы, противоречия, ошибки и лишнюю воду, при этом сохранив исходный смысл вопроса и не добавляя вымышленных сведений.
+
+
+АЛГОРИТМ РАБОТЫ
+
+1. Разбор исходного вопроса
+- Определи его смысл, цель, контекст и ожидаемый тип ответа.
+- Выяви, что именно нужно дать: объяснение, сравнение, инструкцию, совет, вывод, список, пример и т. д.
+- Отметь ограничения: язык ответа, желаемый объём, уровень сложности, тон, формат.
+
+2. Анализ ответов моделей (для каждого ответа)
+- Выдели ключевые идеи, факты, аргументы и полезные формулировки.
+- Отметь сильные стороны: точность, ясность, полноту, удачные примеры, хорошую структуру.
+- Отметь слабые стороны: ошибки, неточности, логические провалы, повторы, лишние детали, расплывчатость.
+- Зафиксируй расхождения между ответами.
+
+3. Оценка расхождений
+Если ответы противоречат друг другу:
+- Кратко определи суть расхождения.
+- Оцени, какая позиция надёжнее, опираясь на:
+  - внутреннюю логическую согласованность,
+  - соответствие общепринятым знаниям,
+  - отсутствие явных ошибок,
+  - полноту и аккуратность формулировок.
+- Если надёжно выбрать нельзя — честно укажи на неопределённость.
+- Если один из ответов содержит явную ошибку — не включай её в финальный ответ.
+- Если ошибка может быть полезна как предостережение — упомяни её кратко как распространённое заблуждение, не повторяя ошибочную формулировку.
+
+Если во входных данных есть пользовательские оценки ответов:
+- Считай их мягким сигналом предпочтения пользователя, а не доказательством фактической правильности.
+- Используй высокую оценку как аргумент в пользу полезности, ясности или удачной подачи, но не ставь её выше логики и точности.
+- Если оценка отсутствует, трактуй это как отсутствие сигнала, а не как низкое качество ответа.
+
+4. Синтез финального ответа
+- Объедини лучшие идеи, объяснения и примеры из всех ответов.
+- Переформулируй материал своими словами, не копируя дословно исходные ответы.
+- Удали повторы, воду, второстепенные детали и несущественные отступления.
+- Сохрани точность, логику и полноту.
+- Не добавляй новых фактов, если они не следуют из исходных ответов или не являются очевидным общеизвестным знанием.
+- Если ответа недостаточно для уверенного вывода, прямо скажи об этом.
+
+
+СТРУКТУРА ФИНАЛЬНОГО ОТВЕТА
+
+1. Краткий ответ — 1–5 предложений, передающих суть без лишних деталей.
+2. Основная часть — развёрнутое, логично организованное объяснение.
+   - Используй заголовки и списки только тогда, когда они действительно улучшают восприятие.
+   - Не делай структуру ради структуры.
+   - Сначала давай главное, затем уточнения, примеры и нюансы.
+
+
+ТРЕБОВАНИЯ К КАЧЕСТВУ
+
+- Ясный, естественный, человеческий язык.
+- Без канцелярита, шаблонных фраз и механических повторов.
+- Без дословного копирования исходных ответов.
+- Без вымышленных фактов и смысловых искажений.
+- Баланс между краткостью и полнотой.
+- Приоритет — полезность, точность и связность.
+
+
+ЯЗЫК
+
+Отвечай на том же языке, на котором задан исходный вопрос.
+
+
+ЕСЛИ ИНФОРМАЦИИ НЕДОСТАТОЧНО
+
+- Не додумывай.
+- Отделяй уверенные выводы от предположений.
+- При необходимости кратко обозначай неопределённость.
+
+
+ФИНАЛЬНЫЙ ПРИНЦИП
+
+Делай не усреднение ответов, а их интеллектуальный синтез: сохраняй лучшее, отбрасывай слабое, исправляй ошибки и выдавай единый качественный результат.
+
+Жди описание задачи от пользователя.`;
+
+        const DEFAULT_MODELS = [
+            {
+                id: 1,
+                name: "Claude",
+                provider: "Anthropic",
+                systemPrompt: `Ты — Claude (Anthropic). Отвечай точно, логично и по делу. Чётко разделяй факты и предположения, адаптируй стиль под сложность вопроса. Будь краток там, где это уместно, и развёрнут там, где необходимо.`,
+                color: "#cc44ff",
+                chatUrl: "https://claude.ai",
+                truncateLimit: 0
+            },
+            {
+                id: 2,
+                name: "ChatGPT",
+                provider: "OpenAI",
+                systemPrompt: `Ты — ChatGPT (OpenAI). Отвечай точно, логично и по делу. Чётко разделяй факты и предположения, адаптируй стиль под сложность вопроса. Будь краток там, где это уместно, и развёрнут там, где необходимо.`,
+                color: "#00ff88",
+                chatUrl: "https://chatgpt.com",
+                truncateLimit: 0
+            },
+            {
+                id: 3,
+                name: "Gemini",
+                provider: "Google",
+                systemPrompt: `Ты — Gemini (Google). Отвечай точно, логично и по делу. Чётко разделяй факты и предположения, адаптируй стиль под сложность вопроса. Будь краток там, где это уместно, и развёрнут там, где необходимо.`,
+                color: "#0088ff",
+                chatUrl: "https://gemini.google.com",
+                truncateLimit: 0
+            },
+            {
+                id: 4,
+                name: "DeepSeek",
+                provider: "DeepSeek-AI",
+                systemPrompt: `Ты — DeepSeek (DeepSeek-AI). Отвечай точно, логично и по делу. Чётко разделяй факты и предположения, адаптируй стиль под сложность вопроса. Будь краток там, где это уместно, и развёрнут там, где необходимо.`,
+                color: "#00ccff",
+                chatUrl: "https://chat.deepseek.com",
+                truncateLimit: 0
+            },
+            {
+                id: 5,
+                name: "GLM",
+                provider: "Zhipu AI",
+                systemPrompt: `Ты — GLM (Zhipu AI). Отвечай точно, логично и по делу. Чётко разделяй факты и предположения, адаптируй стиль под сложность вопроса. Будь краток там, где это уместно, и развёрнут там, где необходимо.`,
+                color: "#ffaa33",
+                chatUrl: "https://chat.z.ai",
+                truncateLimit: 0
+            },
+            {
+                id: 6,
+                name: "Grok",
+                provider: "xAI",
+                systemPrompt: `Ты — Grok (xAI). Отвечай точно, логично и по делу. Чётко разделяй факты и предположения, адаптируй стиль под сложность вопроса. Будь краток там, где это уместно, и развёрнут там, где необходимо.`,
+                color: "#ff44aa",
+                chatUrl: "https://grok.com",
+                truncateLimit: 0
+            },
+            {
+                id: 7,
+                name: "Mistral",
+                provider: "Mistral AI",
+                systemPrompt: `Ты — Mistral (Mistral AI). Отвечай точно, логично и по делу. Чётко разделяй факты и предположения, адаптируй стиль под сложность вопроса. Будь краток там, где это уместно, и развёрнут там, где необходимо.`,
+                color: "#aaff00",
+                chatUrl: "https://chat.mistral.ai",
+                truncateLimit: 0
+            },
+            {
+                id: 8,
+                name: "Llama",
+                provider: "Meta",
+                systemPrompt: `Ты — Llama (Meta). Отвечай точно, логично и по делу. Чётко разделяй факты и предположения, адаптируй стиль под сложность вопроса. Будь краток там, где это уместно, и развёрнут там, где необходимо.`,
+                color: "#ff8800",
+                chatUrl: "https://www.meta.ai",
+                truncateLimit: 0
+            },
+            {
+                id: 9,
+                name: "Qwen",
+                provider: "Alibaba Cloud",
+                systemPrompt: `Ты — Qwen (Alibaba Cloud). Отвечай точно, логично и по делу. Чётко разделяй факты и предположения, адаптируй стиль под сложность вопроса. Будь краток там, где это уместно, и развёрнут там, где необходимо.`,
+                color: "#ff6644",
+                chatUrl: "https://chat.qwen.ai",
+                truncateLimit: 0
+            },
+            {
+                id: 10,
+                name: "Pi",
+                provider: "Inflection AI",
+                systemPrompt: `Ты — Pi (Inflection AI). Отвечай точно, логично и по делу. Чётко разделяй факты и предположения, адаптируй стиль под сложность вопроса. Будь краток там, где это уместно, и развёрнут там, где необходимо.`,
+                color: "#33eebb",
+                chatUrl: "https://pi.ai",
+                truncateLimit: 0
+            },
+            {
+                id: 11,
+                name: "Kimi",
+                provider: "Moonshot AI",
+                systemPrompt: `Ты — Kimi (Moonshot AI). Отвечай точно, логично и по делу. Чётко разделяй факты и предположения, адаптируй стиль под сложность вопроса. Будь краток там, где это уместно, и развёрнут там, где необходимо.`,
+                color: "#00bbff",
+                chatUrl: "https://kimi.moonshot.cn",
+                truncateLimit: 0
+            },
+            {
+                id: 12,
+                name: "ERNIE",
+                provider: "Baidu",
+                systemPrompt: `Ты — ERNIE (Baidu). Отвечай точно, логично и по делу. Чётко разделяй факты и предположения, адаптируй стиль под сложность вопроса. Будь краток там, где это уместно, и развёрнут там, где необходимо.`,
+                color: "#cc44ff",
+                chatUrl: "https://ernie.baidu.com",
+                truncateLimit: 0
+            },
+            {
+                id: 13,
+                name: "Yandex",
+                provider: "Яндекс",
+                systemPrompt: `Ты — Yandex (Яндекс). Отвечай точно, логично и по делу. Чётко разделяй факты и предположения, адаптируй стиль под сложность вопроса. Будь краток там, где это уместно, и развёрнут там, где необходимо.`,
+                color: "#ffcc00",
+                chatUrl: "https://alice.yandex.ru",
+                truncateLimit: 0
+            },
+            {
+                id: 14,
+                name: "GigaChat",
+                provider: "Сбер",
+                systemPrompt: `Ты — GigaChat (Сбер). Отвечай точно, логично и по делу. Чётко разделяй факты и предположения, адаптируй стиль под сложность вопроса. Будь краток там, где это уместно, и развёрнут там, где необходимо.`,
+                color: "#44ffcc",
+                chatUrl: "https://giga.chat",
+                truncateLimit: 0
+            },
+            {
+                id: 15,
+                name: "MiniMax",
+                provider: "MiniMax AI",
+                systemPrompt: `Ты — MiniMax (MiniMax AI). Отвечай точно, логично и по делу. Чётко разделяй факты и предположения, адаптируй стиль под сложность вопроса. Будь краток там, где это уместно, и развёрнут там, где необходимо.`,
+                color: "#cc44ff",
+                chatUrl: "https://agent.minimax.io",
+                truncateLimit: 0
+            },
+            {
+                id: 16,
+                name: "Cohere",
+                provider: "Cohere",
+                systemPrompt: `Ты — Cohere (Cohere). Отвечай точно, логично и по делу. Чётко разделяй факты и предположения, адаптируй стиль под сложность вопроса. Будь краток там, где это уместно, и развёрнут там, где необходимо.`,
+                color: "#44bbff",
+                chatUrl: "https://dashboard.cohere.com/playground/chat",
+                truncateLimit: 0
+            },
+            {
+                id: 17,
+                name: "Sarvam",
+                provider: "Sarvam AI",
+                systemPrompt: `Ты — Sarvam (Sarvam AI). Отвечай точно, логично и по делу. Чётко разделяй факты и предположения, адаптируй стиль под сложность вопроса. Будь краток там, где это уместно, и развёрнут там, где необходимо.`,
+                color: "#f43f5e",
+                chatUrl: "https://dashboard.sarvam.ai/chat",
+                truncateLimit: 0
+            },
+            {
+                id: 18,
+                name: "Upstage",
+                provider: "Upstage AI",
+                systemPrompt: `Ты — Upstage (Upstage AI). Отвечай точно, логично и по делу. Чётко разделяй факты и предположения, адаптируй стиль под сложность вопроса. Будь краток там, где это уместно, и развёрнут там, где необходимо.`,
+                color: "#14b8a6",
+                chatUrl: "https://console.upstage.ai/playground/chat",
+                truncateLimit: 0
+            },
+            {
+                id: 19,
+                name: "StepFun",
+                provider: "StepFun AI",
+                systemPrompt: `Ты — StepFun (StepFun AI). Отвечай точно, логично и по делу. Чётко разделяй факты и предположения, адаптируй стиль под сложность вопроса. Будь краток там, где это уместно, и развёрнут там, где необходимо.`,
+                color: "#8b5cf6",
+                chatUrl: "https://stepfun.ai/chats/new",
+                truncateLimit: 0
+            },
+            {
+                id: 20,
+                name: "Trinity",
+                provider: "Arcee AI",
+                systemPrompt: `Ты — Trinity (Arcee AI). Отвечай точно, логично и по делу. Чётко разделяй факты и предположения, адаптируй стиль под сложность вопроса. Будь краток там, где это уместно, и развёрнут там, где необходимо.`,
+                color: "#ec4899",
+                chatUrl: "https://chat.arcee.ai/chat",
+                truncateLimit: 0
+            }
+        ];
+
+        const DEFAULT_TEMPLATES = [
+            {
+                name: 'Глубокий разбор',
+                content: `Разбери тему глубоко и структурно.
+
+Сначала дай короткий ответ в 2-4 предложениях.
+Потом объясни основную идею простыми словами.
+Далее раскрой важные детали, ограничения и частые ошибки понимания.
+Если уместно, добавь 1-2 понятных примера.
+Пиши ясно, без воды и без лишней теории ради теории.`
+            },
+            {
+                name: 'Пошаговый план',
+                content: `Составь практический пошаговый план решения задачи.
+
+Нужен формат:
+1. Что сделать сначала
+2. Что сделать потом
+3. Какие риски и подводные камни учесть
+4. Как проверить, что всё сделано правильно
+
+Если есть несколько стратегий, кратко сравни их и порекомендуй лучшую.`
+            },
+            {
+                name: 'Сравнение вариантов',
+                content: `Сравни несколько вариантов решения.
+
+Сделай сравнение по критериям:
+- плюсы
+- минусы
+- стоимость или сложность
+- риски
+- когда какой вариант лучше выбирать
+
+В конце дай чёткую рекомендацию с объяснением, почему именно она лучшая.`
+            },
+            {
+                name: 'Код и отладка',
+                content: `Помоги как сильный инженер.
+
+Нужно:
+- найти вероятную причину проблемы
+- объяснить её простыми словами
+- предложить минимальный рабочий фикс
+- показать, как проверить результат
+- если есть несколько причин, отсортировать их по вероятности
+
+Не ограничивайся общими советами, дай конкретику.`
+            },
+            {
+                name: 'Краткая выжимка',
+                content: `Сделай плотную выжимку без воды.
+
+Формат:
+- суть в 1-2 предложениях
+- 3-7 ключевых пунктов
+- что важно запомнить
+
+Убери повторы, общие фразы и всё второстепенное.`
+            },
+            {
+                name: 'Факт vs мнение',
+                content: `Ответь аккуратно и интеллектуально честно.
+
+Явно разделяй:
+- подтверждённые факты
+- вероятные выводы
+- предположения
+- спорные моменты
+
+Если данных недостаточно, прямо скажи об этом и не додумывай лишнего.`
+            }
+        ];
+
+        // State
+        let currentStep = 1;
+        let currentResultTab = 'final';
+        let settingsTab = 'general';
+        let models = [];
+        let enhancerSystem = '';
+        let aggregatorSystem = '';
+        // Thread-based history
+        let allThreads = [];      // [{id, title, createdAt, turns:[{rawPrompt,improvedPrompt,finalAnswer,timestamp,chatUrls}]}]
+        let currentThread = null; // active thread
+        let continuationUrls = {};
+        let isContinuation = false;
+        // Ratings: {modelId: 1-5}
+        let modelRatings = {};
+        // Auto-save
+        let autosaveTimer = null;
+        let autosaveStepToRestore = 1;
+        let notificationTimer = null;
+        let preferences = {
+            notificationsEnabled: true,
+            useRatingsInSynthesis: true
+        };
+
+        const STORAGE_KEYS = {
+            autosave: 'multillm_autosave',
+            threads: 'multillm_threads'
+        };
+        const STORAGE_DB_NAME = 'multillm-storage';
+        const STORAGE_DB_VERSION = 1;
+        const STORAGE_STORE_NAME = 'keyval';
+        let storageDbPromise = null;
+
+        function openStorageDb() {
+            if (!window.indexedDB) return Promise.resolve(null);
+            if (!storageDbPromise) {
+                storageDbPromise = new Promise((resolve) => {
+                    const request = indexedDB.open(STORAGE_DB_NAME, STORAGE_DB_VERSION);
+                    request.onupgradeneeded = () => {
+                        const db = request.result;
+                        if (!db.objectStoreNames.contains(STORAGE_STORE_NAME)) {
+                            db.createObjectStore(STORAGE_STORE_NAME);
+                        }
+                    };
+                    request.onsuccess = () => resolve(request.result);
+                    request.onerror = () => {
+                        console.warn('IndexedDB unavailable:', request.error);
+                        resolve(null);
+                    };
+                });
+            }
+            return storageDbPromise;
+        }
+
+        function runIdbOperation(mode, executor) {
+            return openStorageDb().then((db) => {
+                if (!db) return null;
+                return new Promise((resolve, reject) => {
+                    try {
+                        const tx = db.transaction(STORAGE_STORE_NAME, mode);
+                        const store = tx.objectStore(STORAGE_STORE_NAME);
+                        const request = executor(store);
+                        request.onsuccess = () => resolve(request.result);
+                        request.onerror = () => reject(request.error);
+                    } catch (error) {
+                        reject(error);
+                    }
+                });
+            });
+        }
+
+        async function readStoredText(key) {
+            try {
+                const value = await runIdbOperation('readonly', (store) => store.get(key));
+                if (typeof value === 'string') return value;
+            } catch (error) {
+                console.warn('Read from IndexedDB failed:', error);
+            }
+
+            let fallback = null;
+            try {
+                fallback = localStorage.getItem(key);
+            } catch (error) {
+                console.warn('Read from localStorage failed:', error);
+            }
+            if (fallback !== null) {
+                void writeStoredText(key, fallback, { mirrorLocal: false });
+            }
+            return fallback;
+        }
+
+        async function writeStoredText(key, value, options = {}) {
+            const { mirrorLocal = true } = options;
+            let savedToIndexedDb = false;
+
+            try {
+                const result = await runIdbOperation('readwrite', (store) => store.put(value, key));
+                savedToIndexedDb = result !== null;
+            } catch (error) {
+                console.warn('Write to IndexedDB failed:', error);
+            }
+
+            if (mirrorLocal || !savedToIndexedDb) {
+                try {
+                    localStorage.setItem(key, value);
+                } catch (error) {
+                    console.warn('Write to localStorage failed:', error);
+                }
+            }
+
+            return savedToIndexedDb;
+        }
+
+        async function removeStoredText(key) {
+            try {
+                await runIdbOperation('readwrite', (store) => store.delete(key));
+            } catch (error) {
+                console.warn('Delete from IndexedDB failed:', error);
+            }
+            try {
+                localStorage.removeItem(key);
+            } catch (error) {
+                console.warn('Delete from localStorage failed:', error);
+            }
+        }
+
+        function loadPreferences() {
+            try {
+                const saved = JSON.parse(localStorage.getItem('multillm_preferences') || '{}');
+                preferences = {
+                    notificationsEnabled: saved.notificationsEnabled !== false,
+                    useRatingsInSynthesis: saved.useRatingsInSynthesis !== false
+                };
+            } catch (error) {
+                preferences = {
+                    notificationsEnabled: true,
+                    useRatingsInSynthesis: true
+                };
+            }
+        }
+
+        function savePreferences() {
+            localStorage.setItem('multillm_preferences', JSON.stringify(preferences));
+        }
+
+        function hideNotificationIndicator() {
+            clearTimeout(notificationTimer);
+            const indicator = document.getElementById('autosaveIndicator');
+            if (!indicator) return;
+            indicator.classList.remove('saving', 'saved', 'warning', 'error', 'visible');
+        }
+
+        function showSystemNotification(message, status = 'saved', duration = 2200) {
+            const indicator = document.getElementById('autosaveIndicator');
+            const text = document.getElementById('autosaveText');
+            if (!indicator || !text) return;
+
+            if (!preferences.notificationsEnabled) {
+                hideNotificationIndicator();
+                return;
+            }
+
+            clearTimeout(notificationTimer);
+            indicator.classList.remove('saving', 'saved', 'warning', 'error');
+            indicator.classList.add(status, 'visible');
+            text.textContent = message;
+
+            if (duration > 0) {
+                notificationTimer = setTimeout(() => {
+                    indicator.classList.remove('visible');
+                }, duration);
+            }
+        }
+
+        // ═══════════════════════════════════════════════════════════════
+        // AUTO-SAVE SYSTEM
+        // ═══════════════════════════════════════════════════════════════
+
+        function getAutoSaveState() {
+            const answers = {};
+            models.forEach(m => {
+                const el = document.getElementById(`answer-${m.id}`);
+                if (el) answers[m.id] = el.value;
+            });
+            return {
+                rawPrompt: document.getElementById('rawPrompt').value,
+                improvedPrompt: document.getElementById('improvedPrompt').value,
+                finalAnswer: document.getElementById('finalAnswer').value,
+                answers,
+                ratings: { ...modelRatings },
+                currentStep,
+                timestamp: new Date().toISOString()
+            };
+        }
+
+        function autoSave() {
+            clearTimeout(autosaveTimer);
+            autosaveTimer = setTimeout(async () => {
+                try {
+                    const state = getAutoSaveState();
+                    await writeStoredText(STORAGE_KEYS.autosave, JSON.stringify(state), { mirrorLocal: false });
+                    showAutoSaveIndicator('saved');
+                } catch(e) {
+                    console.error('Auto-save error:', e);
+                }
+            }, 800);
+            showAutoSaveIndicator('saving');
+        }
+
+        async function restoreAutoSave() {
+            try {
+                const saved = await readStoredText(STORAGE_KEYS.autosave);
+                if (!saved) return false;
+                const state = JSON.parse(saved);
+                if (!state.rawPrompt && !state.improvedPrompt && !state.finalAnswer) return false;
+
+                document.getElementById('rawPrompt').value = state.rawPrompt || '';
+                document.getElementById('improvedPrompt').value = state.improvedPrompt || '';
+                document.getElementById('finalAnswer').value = state.finalAnswer || '';
+
+                if (state.answers) {
+                    Object.entries(state.answers).forEach(([modelId, value]) => {
+                        const el = document.getElementById(`answer-${modelId}`);
+                        if (el) el.value = value;
+                    });
+                }
+
+                modelRatings = normalizeOverallRatings(state.ratings);
+                if (Object.keys(modelRatings).length === 0 && state.criteriaRatings) {
+                    modelRatings = migrateCriteriaRatingsToOverall(state.criteriaRatings);
+                }
+
+                models.forEach((m) => updateRatingDisplay(m.id));
+                refreshComparisonView();
+
+                autosaveStepToRestore = state.currentStep || 1;
+
+                return true;
+            } catch(e) {
+                console.error('Restore auto-save error:', e);
+                return false;
+            }
+        }
+
+        async function clearAutoSave() {
+            await removeStoredText(STORAGE_KEYS.autosave);
+        }
+
+        function showAutoSaveIndicator(status) {
+            if (status === 'saving') {
+                showSystemNotification('Сохранение...', 'saving', 0);
+            } else if (status === 'saved') {
+                showSystemNotification('Сохранено', 'saved', 2000);
+            }
+        }
+
+        function initAutoSave() {
+            const fields = ['rawPrompt', 'improvedPrompt', 'finalAnswer'];
+            fields.forEach(id => {
+                const el = document.getElementById(id);
+                if (el) el.addEventListener('input', autoSave);
+            });
+        }
+
+        // ═══════════════════════════════════════════════════════════════
+        // STAR RATING SYSTEM
+        // ═══════════════════════════════════════════════════════════════
+
+        function normalizeOverallRatings(rawRatings) {
+            const normalized = {};
+            if (!rawRatings || typeof rawRatings !== 'object') return normalized;
+            Object.entries(rawRatings).forEach(([modelId, value]) => {
+                const rating = Number(value);
+                if (Number.isFinite(rating) && rating > 0) {
+                    normalized[modelId] = Math.min(5, Math.max(1, Math.round(rating)));
+                }
+            });
+            return normalized;
+        }
+
+        function migrateCriteriaRatingsToOverall(rawRatings) {
+            const normalized = {};
+            if (!rawRatings || typeof rawRatings !== 'object') return normalized;
+            Object.entries(rawRatings).forEach(([modelId, criteria]) => {
+                if (!criteria || typeof criteria !== 'object') return;
+                const values = Object.values(criteria)
+                    .map((value) => Number(value))
+                    .filter((value) => Number.isFinite(value) && value >= 1 && value <= 5);
+                if (values.length > 0) {
+                    normalized[modelId] = Math.min(5, Math.max(1, Math.round(values.reduce((sum, value) => sum + value, 0) / values.length)));
+                }
+            });
+            return normalized;
+        }
+
+        function renderStarRating(modelId) {
+            const rating = modelRatings[modelId] || 0;
+            let html = '<div class="star-rating" data-model-id="' + modelId + '">';
+            for (let i = 1; i <= 5; i++) {
+                const filled = i <= rating ? 'filled' : '';
+                html += `<button class="star-btn ${filled}" onclick="setRating('${modelId}', ${i})" onmouseenter="hoverStar(event, ${i})" onmouseleave="unhoverStar(event)">★</button>`;
+            }
+            if (rating > 0) {
+                const labels = ['', 'Плохо', 'Так себе', 'Нормально', 'Хорошо', 'Отлично'];
+                html += `<span class="rating-label">${labels[rating]}</span>`;
+            }
+            html += '</div>';
+            return html;
+        }
+
+        function setRating(modelId, rating) {
+            if (modelRatings[modelId] === rating) {
+                delete modelRatings[modelId];
+            } else {
+                modelRatings[modelId] = rating;
+            }
+            updateRatingDisplay(modelId);
+            refreshComparisonView();
+            autoSave();
+        }
+
+        function hoverStar(event, starIndex) {
+            const container = event && event.currentTarget ? event.currentTarget.closest('.star-rating') : null;
+            if (!container) return;
+            const stars = container.querySelectorAll('.star-btn');
+            stars.forEach((star, i) => {
+                if (i < starIndex) {
+                    star.classList.add('hovered');
+                } else {
+                    star.classList.remove('hovered');
+                }
+            });
+        }
+
+        function unhoverStar(event) {
+            const container = event && event.currentTarget ? event.currentTarget.closest('.star-rating') : null;
+            if (!container) return;
+            container.querySelectorAll('.star-btn').forEach(star => {
+                star.classList.remove('hovered');
+            });
+        }
+
+        function updateRatingDisplay(modelId) {
+            const rating = modelRatings[modelId] || 0;
+            const labels = ['', 'Плохо', 'Так себе', 'Нормально', 'Хорошо', 'Отлично'];
+            const containers = document.querySelectorAll(`.star-rating[data-model-id="${modelId}"]`);
+            if (!containers.length) return;
+
+            containers.forEach((container) => {
+                const stars = container.querySelectorAll('.star-btn');
+                stars.forEach((star, i) => {
+                    star.classList.toggle('filled', i < rating);
+                });
+                const label = container.querySelector('.rating-label');
+                if (rating > 0) {
+                    if (label) {
+                        label.textContent = labels[rating];
+                    } else {
+                        const span = document.createElement('span');
+                        span.className = 'rating-label';
+                        span.textContent = labels[rating];
+                        container.appendChild(span);
+                    }
+                } else if (label) {
+                    label.remove();
+                }
+            });
+        }
+
+        function refreshComparisonView() {
+            const avgEl = document.getElementById('avgRatingDisplay');
+            if (avgEl) {
+                avgEl.textContent = getAverageRating();
+            }
+
+            const comparisonTab = document.getElementById('result-comparison');
+            if (!comparisonTab) return;
+
+            const isComparisonVisible = !comparisonTab.classList.contains('hidden');
+            const isResultsStepVisible = currentStep === 5;
+            if (isComparisonVisible || isResultsStepVisible) {
+                renderComparison();
+                if (avgEl) {
+                    avgEl.textContent = getAverageRating();
+                }
+            }
+        }
+
+        function getAverageRating() {
+            const ratings = Object.values(modelRatings);
+            if (ratings.length === 0) return 0;
+            return (ratings.reduce((a, b) => a + b, 0) / ratings.length).toFixed(1);
+        }
+
+        // ═══════════════════════════════════════════════════════════════
+        // SIDE-BY-SIDE COMPARISON
+        // ═══════════════════════════════════════════════════════════════
+
+        function renderComparison() {
+            const container = document.getElementById('comparisonGrid');
+            if (!container) return;
+
+            const answersWithContent = models.filter(m => {
+                const el = document.getElementById(`answer-${m.id}`);
+                return el && el.value.trim();
+            });
+
+            if (answersWithContent.length === 0) {
+                container.innerHTML = '<div class="comparison-empty"><svg class="w-10 h-10 mx-auto mb-3 text-zinc-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg><p>Нет ответов для сравнения</p><p class="text-xs mt-1">Добавьте ответы от моделей на шаге 3</p></div>';
+                return;
+            }
+
+            container.innerHTML = answersWithContent.map(m => {
+                const el = document.getElementById(`answer-${m.id}`);
+                const answer = el ? el.value.trim() : '';
+                const rating = modelRatings[m.id] || 0;
+                const ratingStars = '★'.repeat(rating) + '☆'.repeat(5 - rating);
+
+                return `
+                <div class="comparison-card">
+                    <div class="comparison-card-header">
+                        <div class="flex items-center gap-2">
+                            <span class="badge badge-dark">${escapeHtml(m.name)}</span>
+                            <span class="badge badge-light">${escapeHtml(m.provider)}</span>
+                        </div>
+                        <div style="color: #facc15; font-size: 0.85rem;" title="Оценка: ${rating}/5">${ratingStars}</div>
+                    </div>
+                    <div class="comparison-card-body">
+                        <div class="md-content">${parseMarkdown(answer)}</div>
+                    </div>
+                    <div class="comparison-card-footer">
+                        ${renderStarRating(m.id)}
+                        <button class="btn btn-copy btn-sm btn-icon" data-icon-size="w-3.5 h-3.5" title="Скопировать ответ модели" aria-label="Скопировать ответ модели" onclick="copyText(document.getElementById('answer-${m.id}').value, 'comp-copy-${m.id}')" id="comp-copy-${m.id}">
+                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg>
+                        </button>
+                    </div>
+                </div>`;
+            }).join('');
+
+            // Render code blocks in comparison cards
+            container.querySelectorAll('.comparison-card-body').forEach(el => renderCodeBlocks(el));
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', async () => {
+            loadSettings();
+            loadPreferences();
+            initAutoSave();
+            initTheme();
+            await loadThreads();
+            
+            // Restore auto-saved data
+            if (await restoreAutoSave()) {
+                setStep(autosaveStepToRestore);
+            } else {
+                setStep(1);
+            }
+        });
+
+        // Keyboard shortcuts
+        document.addEventListener('keydown', (e) => {
+            // Ctrl+N - New chat
+            if (e.ctrlKey && e.key === 'n') {
+                e.preventDefault();
+                resetAll();
+            }
+            // Ctrl+S - Save to history (when on step 5)
+            if (e.ctrlKey && e.key === 's' && currentStep === 5) {
+                e.preventDefault();
+                void saveToHistory();
+            }
+            // Ctrl+E - Export history
+            if (e.ctrlKey && e.key === 'e') {
+                e.preventDefault();
+                exportHistory();
+            }
+            // Ctrl+I - Import history
+            if (e.ctrlKey && e.key === 'i') {
+                e.preventDefault();
+                importHistory();
+            }
+            // Ctrl+H - Toggle history
+            if (e.ctrlKey && e.key === 'h') {
+                e.preventDefault();
+                if (document.getElementById('historyPanel').classList.contains('open')) {
+                    closeHistory();
+                } else {
+                    openHistory();
+                }
+            }
+            // Arrow keys for step navigation (when no input is focused)
+            if (document.activeElement.tagName !== 'INPUT' && document.activeElement.tagName !== 'TEXTAREA') {
+                if (e.key === 'ArrowRight' && currentStep < 5) {
+                    e.preventDefault();
+                    setStep(currentStep + 1);
+                }
+                if (e.key === 'ArrowLeft' && currentStep > 1) {
+                    e.preventDefault();
+                    setStep(currentStep - 1);
+                }
+            }
+        });
+
+        // Theme
+        function initTheme() {
+            const saved = localStorage.getItem('multillm_theme');
+            const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+            const theme = saved || (prefersDark ? 'dark' : 'light');
+            document.documentElement.setAttribute('data-theme', theme);
+            updateThemeIcon(theme);
+        }
+        function toggleTheme() {
+            const current = document.documentElement.getAttribute('data-theme');
+            const next = current === 'dark' ? 'light' : 'dark';
+            document.documentElement.setAttribute('data-theme', next);
+            localStorage.setItem('multillm_theme', next);
+            updateThemeIcon(next);
+        }
+        function updateThemeIcon(theme) {
+            const light = document.getElementById('themeIconLight');
+            const dark = document.getElementById('themeIconDark');
+            if (theme === 'dark') { light.classList.add('hidden'); dark.classList.remove('hidden'); }
+            else { light.classList.remove('hidden'); dark.classList.add('hidden'); }
+        }
+
+        // Settings functions
+        let templates = [];
+
+        function loadSettings() {
+            const savedModels = localStorage.getItem('multillm_models');
+            const savedEnhancer = localStorage.getItem('multillm_enhancer');
+            const savedAggregator = localStorage.getItem('multillm_aggregator');
+            const savedTemplates = localStorage.getItem('multillm_templates');
+            let parsedTemplates = null;
+
+            if (savedTemplates) {
+                try {
+                    parsedTemplates = JSON.parse(savedTemplates);
+                } catch (error) {
+                    parsedTemplates = null;
+                }
+            }
+
+            models = savedModels ? JSON.parse(savedModels) : [...DEFAULT_MODELS];
+            enhancerSystem = savedEnhancer || DEFAULT_ENHANCER_SYSTEM;
+            aggregatorSystem = savedAggregator || DEFAULT_AGGREGATOR_SYSTEM;
+            const templateMap = new Map(DEFAULT_TEMPLATES.map((template) => [template.name, { ...template }]));
+            if (Array.isArray(parsedTemplates)) {
+                parsedTemplates.forEach((template) => {
+                    if (!template || typeof template.name !== 'string' || typeof template.content !== 'string') return;
+                    const name = template.name.trim();
+                    const content = template.content.trim();
+                    if (!name || !content) return;
+                    templateMap.set(name, { name, content });
+                });
+            }
+            templates = Array.from(templateMap.values());
+
+            updateModelsCount();
+            renderModelCards();
+            updatePromptDisplays();
+        }
+
+        function saveSettings() {
+            // Save prompts from textarea
+            enhancerSystem = document.getElementById('settingsEnhancerPrompt').value;
+            aggregatorSystem = document.getElementById('settingsAggregatorPrompt').value;
+            preferences.notificationsEnabled = document.getElementById('notificationsEnabledToggle').checked;
+            preferences.useRatingsInSynthesis = document.getElementById('useRatingsInSynthesisToggle').checked;
+
+            localStorage.setItem('multillm_models', JSON.stringify(models));
+            localStorage.setItem('multillm_enhancer', enhancerSystem);
+            localStorage.setItem('multillm_aggregator', aggregatorSystem);
+            localStorage.setItem('multillm_templates', JSON.stringify(templates));
+            savePreferences();
+
+            if (!preferences.notificationsEnabled) {
+                hideNotificationIndicator();
+            }
+
+            renderModelCards();
+            updatePromptDisplays();
+            closeSettings();
+        }
+
+        function openSettings() {
+            document.getElementById('settingsModal').classList.remove('hidden');
+            renderModelsList();
+            renderTemplatesList();
+            document.getElementById('settingsEnhancerPrompt').value = enhancerSystem;
+            document.getElementById('settingsAggregatorPrompt').value = aggregatorSystem;
+            document.getElementById('notificationsEnabledToggle').checked = preferences.notificationsEnabled;
+            document.getElementById('useRatingsInSynthesisToggle').checked = preferences.useRatingsInSynthesis;
+            setSettingsTab('general');
+        }
+
+        function closeSettings() {
+            document.getElementById('settingsModal').classList.add('hidden');
+        }
+
+        function setSettingsTab(tab) {
+            settingsTab = tab;
+            document.querySelectorAll('.settings-tab').forEach(t => t.classList.remove('active'));
+            document.querySelector(`.settings-tab[onclick="setSettingsTab('${tab}')"]`).classList.add('active');
+            document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
+            document.getElementById(`settings-${tab}`).classList.add('active');
+            // Refresh templates list when templates tab is selected
+            if (tab === 'templates') {
+                renderTemplatesList();
+            }
+        }
+
+        function renderModelsList() {
+            const container = document.getElementById('modelsList');
+            const countEl = document.getElementById('modelsListCount');
+            
+            if (models.length === 0) {
+                container.innerHTML = '<p class="text-zinc-500 text-sm text-center py-4">Нет моделей. Добавьте первую модель ниже.</p>';
+                countEl.textContent = 'Моделей: 0';
+                return;
+            }
+
+            countEl.innerHTML = `Моделей: ${models.length} (выбрано: <span id="selectedCount">0</span>)`;
+
+            container.innerHTML = `<div id="selectAllRow" class="model-row mb-2 border-b border-zinc-200">
+                <input type="checkbox" class="model-checkbox mr-3" onchange="toggleAllModels(this)">
+                <span class="text-base text-zinc-500">Выбрать все</span>
+            </div>` + models.map((m, i) => `
+                <div class="model-row">
+                    <input type="checkbox" class="model-checkbox mr-3" data-index="${i}" onchange="updateSelectedCount()">
+                    <div class="model-info">
+                        <div class="font-medium text-sm">${escapeHtml(m.name)}</div>
+                        <div class="text-xs text-zinc-500">${escapeHtml(m.provider)}</div>
+                        ${getSafeHttpUrl(m.chatUrl) ? `<div class="text-xs text-blue-500 mt-0.5 truncate"><a href="${escapeHtml(getSafeHttpUrl(m.chatUrl))}" target="_blank" rel="noopener noreferrer" class="hover:underline">🔗 ${escapeHtml(getSafeHttpUrl(m.chatUrl))}</a></div>` : ''}
+                        ${m.systemPrompt ? '<div class="text-xs text-blue-600 mt-1">✓ Индивидуальный промт</div>' : ''}
+                    </div>
+                    <button onclick="editModel(${i})" class="btn btn-outline btn-sm" title="Редактировать">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
+                    </button>
+                    <button onclick="deleteModel(${i})" class="btn btn-danger btn-sm" title="Удалить">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                    </button>
+                </div>
+            `).join('');
+        }
+
+        function updateSelectedCount() {
+            const checkboxes = document.querySelectorAll('.model-checkbox');
+            const allCheckbox = checkboxes[0];
+            const modelCheckboxes = Array.from(checkboxes).slice(1);
+            const checked = modelCheckboxes.filter(cb => cb.checked).length;
+            const selectedEl = document.getElementById('selectedCount');
+            const deleteBtn = document.getElementById('deleteSelectedBtn');
+            const selectAllRow = document.getElementById('selectAllRow');
+            
+            allCheckbox.checked = checked === modelCheckboxes.length && checked > 0;
+            
+            if (selectAllRow) {
+                if (checked === modelCheckboxes.length && checked > 0) {
+                    selectAllRow.classList.add('selected');
+                } else {
+                    selectAllRow.classList.remove('selected');
+                }
+            }
+            
+            if (selectedEl) selectedEl.textContent = checked;
+            if (deleteBtn) deleteBtn.disabled = checked === 0;
+        }
+
+        function toggleAllModels(checkbox) {
+            const checkboxes = document.querySelectorAll('.model-checkbox');
+            checkboxes.forEach(cb => cb.checked = checkbox.checked);
+            updateSelectedCount();
+        }
+
+        function restoreDefaultModels() {
+            if (confirm('Восстановить все модели по умолчанию? Текущие модели будут заменены.')) {
+                models = [...DEFAULT_MODELS];
+                localStorage.setItem('multillm_models', JSON.stringify(models));
+                renderModelsList();
+                updateModelsCount();
+                renderModelCards();
+                updatePromptDisplays();
+            }
+        }
+
+        function deleteSelectedModels() {
+            const checkboxes = document.querySelectorAll('.model-checkbox:checked');
+            const indices = Array.from(checkboxes).map(cb => parseInt(cb.dataset.index)).sort((a, b) => b - a);
+            
+            if (indices.length === 0) return;
+            
+            if (confirm(`Удалить выбранные модели (${indices.length})?`)) {
+                indices.forEach(i => models.splice(i, 1));
+                localStorage.setItem('multillm_models', JSON.stringify(models));
+                renderModelsList();
+                updateModelsCount();
+                renderModelCards();
+            }
+        }
+
+        function deleteAllModels() {
+            if (confirm('Удалить ВСЕ модели? Это действие нельзя отменить.')) {
+                models = [];
+                localStorage.setItem('multillm_models', JSON.stringify(models));
+                renderModelsList();
+                updateModelsCount();
+                renderModelCards();
+            }
+        }
+
+        function addModel() {
+            const name = document.getElementById('newModelName').value.trim();
+            const provider = document.getElementById('newModelProvider').value.trim();
+            const systemPrompt = document.getElementById('newModelSystemPrompt').value.trim();
+            const chatUrl = document.getElementById('newModelChatUrl').value.trim();
+
+            if (!name) {
+                alert('Введите название модели');
+                return;
+            }
+            if (!provider) {
+                alert('Введите провайдера');
+                return;
+            }
+
+            const id = name.toLowerCase().replace(/\s+/g, '-') + '-' + Date.now();
+            models.push({ id, name, provider, systemPrompt, chatUrl });
+
+            document.getElementById('newModelName').value = '';
+            document.getElementById('newModelProvider').value = '';
+            document.getElementById('newModelSystemPrompt').value = '';
+            document.getElementById('newModelChatUrl').value = '';
+
+            renderModelsList();
+            updateModelsCount();
+        }
+
+        function editModel(index) {
+            const model = models[index];
+            const newName = prompt('Название:', model.name);
+            if (newName === null) return;
+            const newProvider = prompt('Провайдер:', model.provider);
+            if (newProvider === null) return;
+            const newSystemPrompt = prompt('Системный промт (пусто = общий):', model.systemPrompt || '');
+            if (newSystemPrompt === null) return;
+            const newChatUrl = prompt('Ссылка на чат:', model.chatUrl || '');
+            
+            models[index].name = newName.trim() || model.name;
+            models[index].provider = newProvider.trim() || model.provider;
+            models[index].systemPrompt = newSystemPrompt !== null ? newSystemPrompt.trim() : model.systemPrompt;
+            models[index].chatUrl = newChatUrl !== null ? newChatUrl.trim() : model.chatUrl;
+
+            renderModelsList();
+        }
+
+        function deleteModel(index) {
+            if (confirm(`Удалить модель "${models[index].name}"?`)) {
+                models.splice(index, 1);
+                renderModelsList();
+                updateModelsCount();
+            }
+        }
+
+        function resetEnhancerPrompt() {
+            document.getElementById('settingsEnhancerPrompt').value = DEFAULT_ENHANCER_SYSTEM;
+        }
+
+        function resetAggregatorPrompt() {
+            document.getElementById('settingsAggregatorPrompt').value = DEFAULT_AGGREGATOR_SYSTEM;
+        }
+
+        // ─── TEMPLATE MANAGEMENT ─────────────────────────────────────────────
+
+        function renderTemplatesList() {
+            const container = document.getElementById('templatesList');
+            if (templates.length === 0) {
+                container.innerHTML = '<p class="text-xs text-zinc-500 text-center py-4">Нет сохранённых шаблонов</p>';
+                return;
+            }
+            container.innerHTML = templates.map((t, i) => `
+                <div class="flex items-center justify-between p-3 mb-2 bg-zinc-50 rounded-lg hover:bg-zinc-100 transition-colors">
+                    <div class="flex-1 min-w-0">
+                        <div class="text-sm font-medium">${escapeHtml(t.name)}</div>
+                        <div class="text-xs text-zinc-500 truncate mt-1">${escapeHtml(t.content.slice(0, 80))}${t.content.length > 80 ? '...' : ''}</div>
+                    </div>
+                    <div class="flex gap-2 ml-3">
+                        <button onclick="applyTemplate(${i})" class="btn btn-outline btn-sm" title="Использовать">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                        </button>
+                        <button onclick="deleteTemplate(${i})" class="btn btn-outline btn-sm text-red-500" title="Удалить">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function addTemplate() {
+            const name = prompt('Название шаблона:');
+            if (!name || !name.trim()) return;
+            const content = prompt('Содержимое шаблона:');
+            if (!content || !content.trim()) return;
+            
+            templates.push({ name: name.trim(), content: content.trim() });
+            localStorage.setItem('multillm_templates', JSON.stringify(templates));
+            renderTemplatesList();
+        }
+
+        function deleteTemplate(index) {
+            if (confirm(`Удалить шаблон "${templates[index].name}"?`)) {
+                templates.splice(index, 1);
+                localStorage.setItem('multillm_templates', JSON.stringify(templates));
+                renderTemplatesList();
+            }
+        }
+
+        function applyTemplate(index) {
+            const template = templates[index];
+            document.getElementById('rawPrompt').value = template.content;
+            closeSettings();
+            setStep(1);
+        }
+
+        function updateModelsCount() {
+            document.getElementById('modelsCount').textContent = `Моделей: ${models.length}`;
+        }
+
+        function renderModelCards() {
+            const container = document.getElementById('modelCardsContainer');
+            const answerDrafts = {};
+
+            models.forEach((m) => {
+                const answerEl = document.getElementById(`answer-${m.id}`);
+                if (answerEl) answerDrafts[m.id] = answerEl.value;
+            });
+
+            container.innerHTML = models.map(m => {
+                const contUrl = getSafeHttpUrl(continuationUrls[m.id]);
+                const effectiveUrl = contUrl || getSafeHttpUrl(m.chatUrl);
+                const hasUrl = !!effectiveUrl;
+                const hasSystemPrompt = m.systemPrompt && m.systemPrompt.trim();
+                const isCont = !!contUrl;
+                const answerValue = answerDrafts[m.id] ?? '';
+
+                return `
+                <div class="answer-section">
+                    <div class="answer-section-header" onclick="toggleAnswerSection('model-${m.id}')">
+                        <div class="answer-section-header-left">
+                            <span class="badge badge-dark">${escapeHtml(m.name)}</span>
+                            <span class="badge badge-light">${escapeHtml(m.provider)}</span>
+                            ${hasSystemPrompt ? '<span class="badge" style="background:#e0f2fe;color:#0369a1;font-size:0.75rem;">⚙ Свой промт</span>' : ''}
+                            ${isCont ? '<span class="continuation-badge">🔗 Продолжение чата</span>' : ''}
+                        </div>
+                        <svg id="section-toggle-model-${m.id}" class="answer-section-toggle" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                    </div>
+                    <div id="section-content-model-${m.id}" class="answer-section-content">
+                        <div class="flex flex-wrap gap-2 mb-3">
+                            <button id="copy-open-${m.id}" class="btn btn-primary btn-sm" onclick="copyAndOpen('${m.id}', event)" title="Скопировать промт${hasSystemPrompt ? ' с системным промтом' : ''} ${hasUrl ? 'и открыть ' + escapeHtml(m.name) : ''}">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg>
+                                ${hasUrl ? `Скопировать и открыть ${escapeHtml(m.name)}` : 'Скопировать промт'}
+                                ${hasUrl ? '<svg class="w-3 h-3 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path></svg>' : ''}
+                            </button>
+                        </div>
+                        <div class="mb-3">
+                            ${renderStarRating(m.id)}
+                        </div>
+                        <p class="text-zinc-500 text-sm mb-2">Вставьте ответ от ${escapeHtml(m.name)}:</p>
+                        <textarea id="answer-${m.id}" class="textarea" placeholder="Вставьте ответ от ${escapeHtml(m.name)}..." oninput="autoSave()">${escapeHtml(answerValue)}</textarea>
+                    </div>
+                </div>
+            `}).join('');
+        }
+
+        function copyModelSystemPrompt(modelId, event) {
+            event.stopPropagation();
+            const m = models.find(x => String(x.id) === String(modelId));
+            if (!m || !m.systemPrompt) return;
+            copyToClipboard(m.systemPrompt).then((success) => {
+                if (!success) {
+                    showSystemNotification('Не удалось скопировать системный промт', 'warning', 2600);
+                    return;
+                }
+                const btn = document.getElementById('copy-sys-' + modelId);
+                if (btn) {
+                    btn.classList.add('copied');
+                    setCopyButtonIconState(btn, true);
+                    setTimeout(() => {
+                        btn.classList.remove('copied');
+                        setCopyButtonIconState(btn, false);
+                    }, 2000);
+                }
+            });
+        }
+
+        function copyAndOpen(modelId, event) {
+            event.stopPropagation();
+            const m = models.find(x => String(x.id) === String(modelId));
+            if (!m) return;
+
+            const improved = document.getElementById('improvedPrompt').value.trim();
+            let textToCopy = improved || '(промт ещё не задан)';
+            
+            // If model has a system prompt, prepend it
+            if (m.systemPrompt && m.systemPrompt.trim()) {
+                textToCopy = m.systemPrompt.trim() + '\n\n---\n\n' + textToCopy;
+            }
+            
+            // Use continuation URL if set, otherwise default chatUrl
+            const urlToOpen = getSafeHttpUrl(continuationUrls[m.id]) || getSafeHttpUrl(m.chatUrl);
+
+            const copyPromise = copyToClipboard(textToCopy);
+
+            if (urlToOpen) {
+                const popup = window.open(urlToOpen, '_blank', 'noopener,noreferrer');
+                if (popup) {
+                    popup.opener = null;
+                } else {
+                    showSystemNotification('Браузер заблокировал новую вкладку', 'warning', 2600);
+                }
+            }
+
+            copyPromise.then((success) => {
+                const btn = document.getElementById('copy-open-' + modelId);
+                const hasUrl = !!urlToOpen;
+                if (btn) {
+                    if (!success) {
+                        showSystemNotification('Не удалось скопировать промт', 'warning', 2600);
+                        return;
+                    }
+                    btn.classList.remove('btn-primary');
+                    btn.classList.add('btn-copy', 'copied');
+                    btn.innerHTML = '<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg> Скопировано!';
+                    setTimeout(() => {
+                        btn.classList.remove('btn-copy', 'copied');
+                        btn.classList.add('btn-primary');
+                        const label = hasUrl ? `Скопировать и открыть ${escapeHtml(m.name)}` : 'Скопировать промт';
+                        btn.innerHTML = `<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg> ${label}${hasUrl ? '<svg class="w-3 h-3 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path></svg>' : ''}`;
+                    }, 2000);
+                }
+            });
+        }
+
+        function updatePromptDisplays() {
+            document.getElementById('enhancerSystemDisplay').textContent = enhancerSystem;
+            document.getElementById('aggregatorSystemDisplay').textContent = aggregatorSystem;
+        }
+
+        // Step functions
+        function setStep(step) {
+            // Validate
+            if (step === 2 && !document.getElementById('rawPrompt').value.trim()) {
+                alert('Введите запрос');
+                return;
+            }
+            if (step === 3 && !document.getElementById('improvedPrompt').value.trim()) {
+                alert('Вставьте улучшенный промт');
+                return;
+            }
+            if (step === 4) {
+                const hasAnswers = models.some(m => 
+                    document.getElementById(`answer-${m.id}`)?.value.trim()
+                );
+                if (!hasAnswers) {
+                    alert('Добавьте хотя бы один ответ от модели');
+                    return;
+                }
+            }
+            if (step === 5 && !document.getElementById('finalAnswer').value.trim()) {
+                alert('Вставьте синтезированный ответ');
+                return;
+            }
+
+            currentStep = step;
+
+            // Refresh in-page chat history when on step 1
+            if (step === 1) renderInPageChatHistory();
+
+            // Update step buttons
+            document.querySelectorAll('.step-btn').forEach((btn, i) => {
+                btn.classList.remove('active', 'completed');
+                if (i + 1 === step) {
+                    btn.classList.add('active');
+                } else if (i + 1 < step) {
+                    btn.classList.add('completed');
+                }
+            });
+
+            // Update step content
+            document.querySelectorAll('.step-content').forEach(el => el.classList.remove('active'));
+            document.getElementById('step-' + step).classList.add('active');
+
+            // Update dynamic content
+            if (step === 2) {
+                document.getElementById('enhancerUserPrompt').innerHTML = '<div class="code-block scrollable">Вот исходный запрос пользователя:\n«' + escapeHtml(document.getElementById('rawPrompt').value) + '»</div>';
+            }
+            if (step === 3) {
+                renderMarkdownInto(document.getElementById('improvedPromptDisplay'), document.getElementById('improvedPrompt').value);
+            }
+            if (step === 4) {
+                document.getElementById('aggregatorPromptDisplay').innerHTML = '<div class="md-content" style="max-height: 300px; overflow-y: auto;">' + escapeHtml(generateAggregatorPrompt()) + '</div>';
+            }
+            if (step === 5) {
+                updateResults();
+            }
+        }
+
+        function setResultTab(tab, evt) {
+            currentResultTab = tab;
+            
+            // Update tab buttons
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.classList.remove('border-zinc-900', 'text-zinc-900');
+                btn.classList.add('border-transparent', 'text-zinc-500');
+            });
+            if (evt && evt.target) {
+                evt.target.classList.remove('border-transparent', 'text-zinc-500');
+                evt.target.classList.add('border-zinc-900', 'text-zinc-900');
+            }
+
+            // Update tab content
+            document.querySelectorAll('.result-tab').forEach(el => el.classList.add('hidden'));
+            document.getElementById('result-' + tab).classList.remove('hidden');
+
+            if (tab === 'comparison') {
+                refreshComparisonView();
+            }
+        }
+
+        function generateEnhancerUserPrompt() {
+            return 'Вот исходный запрос пользователя:\n«' + document.getElementById('rawPrompt').value + '»';
+        }
+
+        function generateAggregatorPrompt() {
+            const improvedPrompt = document.getElementById('improvedPrompt').value;
+            const useRatings = preferences.useRatingsInSynthesis;
+
+            let answersText = '';
+            let index = 1;
+            models.forEach(m => {
+                const el = document.getElementById(`answer-${m.id}`);
+                const answer = el ? el.value.trim() : '';
+                if (answer) {
+                    let ratingText = '';
+                    if (useRatings) {
+                        const rating = modelRatings[m.id];
+                        ratingText = rating
+                            ? `Пользовательская оценка: ${rating}/5. Это мягкий сигнал предпочтения, а не гарантия фактической точности.\n`
+                            : 'Пользовательская оценка: не указана. Это нейтральный случай; не считай отсутствие оценки минусом.\n';
+                    }
+
+                    answersText += `Ответ ${index} (${m.name}, ${m.provider}):\n${ratingText}«${answer}»\n\n`;
+                    index++;
+                }
+            });
+
+            const ratingsGuidance = useRatings
+                ? `Интерпретация оценок пользователя:
+- Если у ответа есть оценка, учитывай её как дополнительный сигнал полезности и предпочтения пользователя.
+- Не подменяй пользовательской оценкой фактическую точность, логическую согласованность и полноту.
+- Если оценка отсутствует, считай это отсутствием сигнала, а не негативной оценкой.
+
+`
+                : '';
+
+            return `Исходный вопрос (улучшенный промт):
+«${improvedPrompt}»
+
+${ratingsGuidance}Ответы разных моделей:
+
+${answersText}`;
+        }
+
+        function generateResultJSON() {
+            const answers = models
+                .map(m => {
+                    const el = document.getElementById(`answer-${m.id}`);
+                    return {
+                        model_id: m.id,
+                        model_name: m.name,
+                        provider: m.provider,
+                        user_rating: modelRatings[m.id] ?? null,
+                        answer_text: el ? el.value.trim() : ''
+                    };
+                })
+                .filter(a => a.answer_text);
+
+            const result = {
+                raw_prompt: document.getElementById('rawPrompt').value,
+                improved_prompt: document.getElementById('improvedPrompt').value,
+                answers: answers,
+                final_answer: document.getElementById('finalAnswer').value
+            };
+
+            return JSON.stringify(result, null, 2);
+        }
+
+        function updateResults() {
+            // Save to history
+            void saveToHistory();
+
+            // JSON tab
+            document.getElementById('resultJSONDisplay').textContent = generateResultJSON();
+
+            // Final answer tab - render markdown
+            const finalAnswerContent = document.getElementById('finalAnswer').value;
+            renderMarkdownInto(document.getElementById('finalAnswerDisplay'), finalAnswerContent);
+            refreshComparisonView();
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        function getSafeHttpUrl(value) {
+            if (!value || !value.trim()) return null;
+            try {
+                const url = new URL(value.trim(), window.location.href);
+                if (url.protocol === 'http:' || url.protocol === 'https:') {
+                    return url.href;
+                }
+            } catch (error) {}
+            return null;
+        }
+
+        function sanitizeLinkUrl(value) {
+            if (!value || !value.trim()) return null;
+            if (value.trim().startsWith('#')) return value.trim();
+            try {
+                const url = new URL(value.trim(), window.location.href);
+                if (['http:', 'https:', 'mailto:'].includes(url.protocol)) {
+                    return url.href;
+                }
+            } catch (error) {}
+            return null;
+        }
+
+        function sanitizeMarkdownHtml(html) {
+            const template = document.createElement('template');
+            template.innerHTML = html;
+            const allowedTags = new Set([
+                'a', 'blockquote', 'br', 'code', 'del', 'em', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6',
+                'hr', 'li', 'ol', 'p', 'pre', 'strong', 'table', 'tbody', 'td', 'th', 'thead', 'tr', 'ul'
+            ]);
+            const removeWithContentTags = new Set([
+                'button', 'form', 'iframe', 'input', 'link', 'meta', 'object', 'script', 'select', 'style', 'textarea'
+            ]);
+            const allowedAttributes = {
+                a: new Set(['href', 'title']),
+                code: new Set(['class'])
+            };
+
+            const visit = (node) => {
+                if (node.nodeType === Node.TEXT_NODE) return;
+                if (node.nodeType === Node.COMMENT_NODE) {
+                    node.remove();
+                    return;
+                }
+                if (node.nodeType !== Node.ELEMENT_NODE) {
+                    node.remove();
+                    return;
+                }
+
+                const tag = node.tagName.toLowerCase();
+                if (removeWithContentTags.has(tag)) {
+                    node.remove();
+                    return;
+                }
+
+                Array.from(node.childNodes).forEach(visit);
+
+                if (!allowedTags.has(tag)) {
+                    const parent = node.parentNode;
+                    if (!parent) return;
+                    while (node.firstChild) {
+                        parent.insertBefore(node.firstChild, node);
+                    }
+                    node.remove();
+                    return;
+                }
+
+                Array.from(node.attributes).forEach((attr) => {
+                    const attrName = attr.name.toLowerCase();
+                    if (attrName.startsWith('on') || attrName === 'style') {
+                        node.removeAttribute(attr.name);
+                        return;
+                    }
+
+                    const tagAllowed = allowedAttributes[tag];
+                    if (!tagAllowed || !tagAllowed.has(attrName)) {
+                        node.removeAttribute(attr.name);
+                        return;
+                    }
+
+                    if (tag === 'a' && attrName === 'href') {
+                        const safeHref = sanitizeLinkUrl(attr.value);
+                        if (!safeHref) {
+                            node.removeAttribute('href');
+                            return;
+                        }
+                        node.setAttribute('href', safeHref);
+                        node.setAttribute('target', '_blank');
+                        node.setAttribute('rel', 'noopener noreferrer');
+                    }
+
+                    if (tag === 'code' && attrName === 'class') {
+                        const safeClasses = attr.value
+                            .split(/\s+/)
+                            .filter((className) => /^language-[\w-]+$/.test(className));
+                        if (safeClasses.length > 0) {
+                            node.setAttribute('class', safeClasses.join(' '));
+                        } else {
+                            node.removeAttribute('class');
+                        }
+                    }
+                });
+            };
+
+            Array.from(template.content.childNodes).forEach(visit);
+            return template.innerHTML;
+        }
+
+        function parseMarkdown(text) {
+            return sanitizeMarkdownHtml(marked.parse(text || '', { breaks: true, gfm: true }));
+        }
+
+        function renderMarkdownInto(container, text) {
+            if (!container) return;
+            container.innerHTML = '<div class="md-content">' + parseMarkdown(text) + '</div>';
+            renderCodeBlocks(container);
+        }
+
+        function toggleAnswerSection(id) {
+            const header = document.getElementById('section-header-' + id);
+            const content = document.getElementById('section-content-' + id);
+            const toggle = document.getElementById('section-toggle-' + id);
+            
+            content.classList.toggle('collapsed');
+            toggle.classList.toggle('collapsed');
+        }
+
+        function renderCodeBlocks(container) {
+            container.querySelectorAll('pre').forEach(pre => {
+                const code = pre.querySelector('code');
+                if (!code) return;
+
+                // Skip if already wrapped (e.g. called twice)
+                if (pre.parentElement && pre.parentElement.classList.contains('code-block-wrapper')) return;
+
+                const language = code.className.replace(/language-/, '') || '';
+                const codeText = code.textContent;
+
+                // Create a wrapper div and insert it in place of <pre>
+                const wrapper = document.createElement('div');
+                wrapper.className = 'code-block-wrapper';
+                pre.parentNode.insertBefore(wrapper, pre);
+                wrapper.appendChild(pre);
+
+                if (language) {
+                    const langSpan = document.createElement('span');
+                    langSpan.className = 'code-lang';
+                    langSpan.textContent = language;
+                    wrapper.appendChild(langSpan);
+                }
+
+                const btn = document.createElement('button');
+                btn.className = 'code-copy-btn';
+                btn.dataset.iconSize = 'w-3 h-3';
+                btn.title = 'Скопировать код';
+                btn.setAttribute('aria-label', 'Скопировать код');
+                setCopyButtonIconState(btn, false);
+                btn.onclick = function() { copyCodeBlock(this, codeText); };
+                wrapper.appendChild(btn);
+            });
+        }
+
+        // ── Universal clipboard: Clipboard API + execCommand fallback (Яндекс Браузер / file://) ──
+        function copyToClipboard(text) {
+            if (navigator.clipboard && window.isSecureContext) {
+                return navigator.clipboard.writeText(text)
+                    .then(() => true)
+                    .catch(() => Promise.resolve(execCommandCopy(text)));
+            }
+            return Promise.resolve(execCommandCopy(text));
+        }
+
+        function execCommandCopy(text) {
+            const ta = document.createElement('textarea');
+            ta.value = text;
+            ta.style.cssText = 'position:fixed;top:-9999px;left:-9999px;opacity:0;pointer-events:none;';
+            document.body.appendChild(ta);
+            ta.focus();
+            ta.select();
+            ta.setSelectionRange(0, ta.value.length);
+            let ok = false;
+            try { ok = document.execCommand('copy'); } catch(e) {}
+            document.body.removeChild(ta);
+            return ok;
+        }
+
+        function getCopyIconMarkup(sizeClass = 'w-4 h-4') {
+            return `<svg class="${sizeClass}" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg>`;
+        }
+
+        function getCheckIconMarkup(sizeClass = 'w-4 h-4') {
+            return `<svg class="${sizeClass}" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>`;
+        }
+
+        function setCopyButtonIconState(btn, copied = false) {
+            if (!btn) return;
+            const iconSize = btn.dataset.iconSize || (btn.classList.contains('code-copy-btn') ? 'w-3 h-3' : 'w-4 h-4');
+            btn.innerHTML = copied ? getCheckIconMarkup(iconSize) : getCopyIconMarkup(iconSize);
+        }
+
+        function copyCodeBlock(btn, code) {
+            copyToClipboard(code).then((success) => {
+                if (!success) {
+                    showSystemNotification('Не удалось скопировать код', 'warning', 2600);
+                    return;
+                }
+                btn.classList.add('copied');
+                setCopyButtonIconState(btn, true);
+                setTimeout(() => {
+                    btn.classList.remove('copied');
+                    setCopyButtonIconState(btn, false);
+                }, 2000);
+            });
+        }
+
+        function copyText(text, buttonId) {
+            // Handle special constants
+            if (text === 'ENHANCER_SYSTEM') text = enhancerSystem;
+            if (text === 'AGGREGATOR_SYSTEM') text = aggregatorSystem;
+
+            copyToClipboard(text).then((success) => {
+                if (!success) {
+                    showSystemNotification('Не удалось скопировать текст', 'warning', 2600);
+                    return;
+                }
+                const btn = document.getElementById(buttonId);
+                if (!btn) return;
+                btn.classList.add('copied');
+                setCopyButtonIconState(btn, true);
+                
+                setTimeout(() => {
+                    btn.classList.remove('copied');
+                    setCopyButtonIconState(btn, false);
+                }, 2000);
+            });
+        }
+
+        function copyAsMarkdown(containerId, buttonId) {
+            const container = document.getElementById(containerId);
+            const mdContent = container.querySelector('.md-content');
+            if (!mdContent) return;
+
+            const text = document.getElementById('finalAnswer').value;
+            
+            copyToClipboard(text).then((success) => {
+                if (!success) {
+                    showSystemNotification('Не удалось скопировать Markdown', 'warning', 2600);
+                    return;
+                }
+                const btn = document.getElementById(buttonId);
+                if (!btn) return;
+                btn.classList.add('copied');
+                setCopyButtonIconState(btn, true);
+                
+                setTimeout(() => {
+                    btn.classList.remove('copied');
+                    setCopyButtonIconState(btn, false);
+                }, 2000);
+            });
+        }
+
+        function resetAll() {
+            continuationUrls = {};
+            isContinuation = false;
+            currentThread = null;
+            modelRatings = {};
+            clearAutoSave();
+            
+            document.getElementById('rawPrompt').value = '';
+            document.getElementById('improvedPrompt').value = '';
+            document.getElementById('finalAnswer').value = '';
+            models.forEach(m => {
+                const el = document.getElementById(`answer-${m.id}`);
+                if (el) el.value = '';
+            });
+            setStep(1);
+        }
+
+        // ─── THREADS / HISTORY ───────────────────────────────────────────────
+
+        async function loadThreads() {
+            try {
+                const saved = await readStoredText(STORAGE_KEYS.threads);
+                allThreads = JSON.parse(saved || '[]');
+            }
+            catch(e) { allThreads = []; }
+        }
+
+        async function saveThreads() {
+            await writeStoredText(STORAGE_KEYS.threads, JSON.stringify(allThreads), { mirrorLocal: false });
+        }
+
+        async function saveToHistory() {
+            const rawPrompt = document.getElementById('rawPrompt').value.trim();
+            const finalAnswer = document.getElementById('finalAnswer').value.trim();
+            if (!rawPrompt || !finalAnswer) return;
+
+            const turn = {
+                rawPrompt,
+                improvedPrompt: document.getElementById('improvedPrompt').value.trim(),
+                finalAnswer,
+                timestamp: new Date().toISOString(),
+                chatUrls: { ...continuationUrls }
+            };
+
+            if (!currentThread) {
+                // Start a new thread
+                currentThread = {
+                    id: Date.now(),
+                    title: rawPrompt.length > 80 ? rawPrompt.slice(0, 80) + '…' : rawPrompt,
+                    createdAt: new Date().toISOString(),
+                    turns: []
+                };
+                allThreads.unshift(currentThread);
+                if (allThreads.length > 30) allThreads = allThreads.slice(0, 30);
+            }
+
+            // Avoid duplicate turn
+            const last = currentThread.turns[currentThread.turns.length - 1];
+            if (last && last.rawPrompt === turn.rawPrompt && last.finalAnswer === turn.finalAnswer) return;
+
+            currentThread.turns.push(turn);
+            // Sync reference in allThreads
+            const idx = allThreads.findIndex(t => t.id === currentThread.id);
+            if (idx !== -1) allThreads[idx] = currentThread;
+
+            await saveThreads();
+        }
+
+        // Render the in-page chat history bubbles above step-1 input
+        function renderInPageChatHistory() {
+            const wrap = document.getElementById('chatHistoryWrap');
+            const body = document.getElementById('chatHistoryBody');
+            const titleEl = document.getElementById('chatHistoryTitle');
+            const step1Title = document.getElementById('step1Title');
+            const step1Hint = document.getElementById('step1Hint');
+
+            if (!currentThread || currentThread.turns.length === 0) {
+                wrap.classList.add('hidden');
+                body.innerHTML = '';
+                if (step1Title) step1Title.textContent = 'Шаг 1: Ваш сырой запрос';
+                if (step1Hint) step1Hint.textContent = 'Введите ваш исходный вопрос или задачу';
+                return;
+            }
+
+            wrap.classList.remove('hidden');
+            if (titleEl) titleEl.textContent = `Чат · ${currentThread.turns.length} ${currentThread.turns.length === 1 ? 'вопрос' : 'вопроса'}`;
+            if (step1Title) step1Title.textContent = 'Продолжить чат';
+            if (step1Hint) step1Hint.textContent = 'Задайте следующий вопрос — он будет отправлен в те же чаты';
+
+            body.innerHTML = currentThread.turns.map((turn, i) => {
+                const aiId = 'ai-bubble-' + i;
+                const aiHTML = parseMarkdown(turn.finalAnswer);
+                return `
+                <div class="chat-turn">
+                    <span class="chat-turn-num">Вопрос ${i + 1}</span>
+                    <div class="chat-bubble-user">${escapeHtml(turn.rawPrompt)}</div>
+                    <div class="chat-bubble-ai">
+                        <div id="${aiId}" class="md-content chat-bubble-ai-collapsed">${aiHTML}</div>
+                        <button onclick="toggleAiBubble('${aiId}', this)" class="mt-1 text-xs text-zinc-500 hover:text-zinc-700 underline">Развернуть</button>
+                    </div>
+                </div>`;
+            }).join('');
+
+            // Render code blocks inside bubbles
+            body.querySelectorAll('.chat-bubble-ai .md-content').forEach(el => renderCodeBlocks(el));
+
+            // Scroll to bottom
+            setTimeout(() => { body.scrollTop = body.scrollHeight; }, 50);
+        }
+
+        function toggleAiBubble(id, btn) {
+            const el = document.getElementById(id);
+            if (!el) return;
+            const collapsed = el.classList.toggle('chat-bubble-ai-collapsed');
+            btn.textContent = collapsed ? 'Развернуть' : 'Свернуть';
+        }
+
+        // ─── HISTORY PANEL ───────────────────────────────────────────────────
+
+        async function openHistory() {
+            await loadThreads();
+            renderHistoryList();
+            document.getElementById('historyPanel').classList.add('open');
+            document.getElementById('historyOverlay').classList.add('open');
+        }
+
+        function closeHistory() {
+            document.getElementById('historyPanel').classList.remove('open');
+            document.getElementById('historyOverlay').classList.remove('open');
+        }
+
+        function exportHistory() {
+            const data = {
+                threads: allThreads,
+                models: models,
+                exportDate: new Date().toISOString()
+            };
+            const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `multillm-history-${new Date().toISOString().split('T')[0]}.json`;
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+
+        function importHistory() {
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.accept = '.json';
+            input.onchange = (e) => {
+                const file = e.target.files[0];
+                if (!file) return;
+                const reader = new FileReader();
+                reader.onload = async (e) => {
+                    try {
+                        const data = JSON.parse(e.target.result);
+                        if (data.threads && Array.isArray(data.threads)) {
+                            if (confirm(`Импортировать ${data.threads.length} чатов? Существующая история будет дополнена.`)) {
+                                // Merge threads
+                                const existingIds = new Set(allThreads.map(t => t.id));
+                                data.threads.forEach(thread => {
+                                    if (!existingIds.has(thread.id)) {
+                                        allThreads.push(thread);
+                                    }
+                                });
+                                await saveThreads();
+                                renderHistoryList();
+                                alert(`Импортировано ${data.threads.length} чатов`);
+                            }
+                        }
+                    } catch (err) {
+                        alert('Ошибка при чтении файла: ' + err.message);
+                    }
+                };
+                reader.readAsText(file);
+            };
+            input.click();
+        }
+
+        function filterHistory() {
+            const query = document.getElementById('historySearch').value.toLowerCase().trim();
+            const entries = document.querySelectorAll('.thread-entry');
+            entries.forEach(entry => {
+                const title = entry.querySelector('.thread-title').textContent.toLowerCase();
+                const visible = !query || title.includes(query);
+                entry.style.display = visible ? 'block' : 'none';
+            });
+        }
+
+        function clearHistory() {
+            if (!confirm('Очистить всю историю чатов?')) return;
+            allThreads = [];
+            currentThread = null;
+            void saveThreads();
+            renderHistoryList();
+            renderInPageChatHistory();
+        }
+
+        function renderHistoryList() {
+            const container = document.getElementById('historyList');
+            if (allThreads.length === 0) {
+                container.innerHTML = `<div class="history-empty">
+                    <svg class="w-10 h-10 mx-auto mb-3 text-zinc-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                    <p>История пуста</p>
+                    <p class="text-xs mt-1">Завершённые чаты появятся здесь</p>
+                </div>`;
+                return;
+            }
+            container.innerHTML = allThreads.map((thread, idx) => {
+                const date = new Date(thread.createdAt);
+                const dateStr = date.toLocaleDateString('ru-RU', {day:'2-digit',month:'2-digit'}) + ' ' +
+                                date.toLocaleTimeString('ru-RU', {hour:'2-digit',minute:'2-digit'});
+                const isActive = currentThread && currentThread.id === thread.id;
+                return `
+                <div class="thread-entry" style="${isActive ? 'border-color:#3b82f6;' : ''}">
+                    <div class="thread-entry-header" onclick="toggleThreadExpand(${idx})">
+                        <div style="flex:1;min-width:0;">
+                            <div class="thread-title">${escapeHtml(thread.title)}${isActive ? ' <span style="color:#3b82f6;font-size:0.7rem;font-weight:600;">● активный</span>' : ''}</div>
+                            <div class="thread-meta">
+                                <span>🕐 ${dateStr}</span>
+                                <span>💬 ${thread.turns.length} ${thread.turns.length === 1 ? 'вопрос' : thread.turns.length < 5 ? 'вопроса' : 'вопросов'}</span>
+                            </div>
+                        </div>
+                        <svg id="thread-arrow-${idx}" style="width:16px;height:16px;flex-shrink:0;transition:transform 0.2s;color:#a1a1aa;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                    </div>
+                    <div id="thread-turns-${idx}" class="thread-turns" style="display:none;">
+                        ${thread.turns.map((turn, ti) => `
+                        <div class="thread-turn-row">
+                            <span style="width:20px;flex-shrink:0;color:#a1a1aa;font-size:0.7rem;">${ti+1}.</span>
+                            <span style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${escapeHtml(turn.rawPrompt.length > 60 ? turn.rawPrompt.slice(0,60)+'…' : turn.rawPrompt)}</span>
+                        </div>`).join('')}
+                    </div>
+                    <div class="thread-actions">
+                        <button class="btn btn-primary btn-sm" onclick="openThread(${idx})">
+                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path></svg>
+                            Открыть и продолжить
+                        </button>
+                        <button class="btn btn-outline btn-sm text-red-500 border-red-200 hover:bg-red-50" onclick="deleteThread(${idx})" title="Удалить чат">
+                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                        </button>
+                    </div>
+                </div>`;
+            }).join('');
+        }
+
+        function toggleThreadExpand(idx) {
+            const el = document.getElementById('thread-turns-' + idx);
+            const arrow = document.getElementById('thread-arrow-' + idx);
+            if (!el) return;
+            const open = el.style.display === 'none';
+            el.style.display = open ? 'block' : 'none';
+            if (arrow) arrow.style.transform = open ? 'rotate(180deg)' : '';
+        }
+
+        function openThread(idx) {
+            const thread = allThreads[idx];
+            if (!thread) return;
+            currentThread = thread;
+            isContinuation = thread.turns.length > 0;
+            modelRatings = {};
+            models.forEach(m => {
+                const answerEl = document.getElementById(`answer-${m.id}`);
+                if (answerEl) answerEl.value = '';
+            });
+            // Load last turn's chatUrls as continuation URLs
+            const lastTurn = thread.turns[thread.turns.length - 1];
+            continuationUrls = lastTurn ? { ...(lastTurn.chatUrls || {}) } : {};
+            // Load last turn data into fields
+            if (lastTurn) {
+                document.getElementById('rawPrompt').value = '';
+                document.getElementById('improvedPrompt').value = lastTurn.improvedPrompt || '';
+                document.getElementById('finalAnswer').value = lastTurn.finalAnswer || '';
+            }
+            closeHistory();
+            // Ask for chat URLs (pre-filled with last turn's URLs)
+            openContinueModalWithPrefill(continuationUrls);
+        }
+
+        function deleteThread(idx) {
+            const thread = allThreads[idx];
+            if (!confirm(`Удалить чат «${thread.title.slice(0,40)}»?`)) return;
+            if (currentThread && currentThread.id === thread.id) {
+                currentThread = null;
+                isContinuation = false;
+                continuationUrls = {};
+            }
+            allThreads.splice(idx, 1);
+            void saveThreads();
+            renderHistoryList();
+            renderInPageChatHistory();
+        }
+
+        // ─── CONTINUE CHAT ───────────────────────────────────────────────────
+
+        function openContinueModal() {
+            openContinueModalWithPrefill(continuationUrls);
+        }
+
+        function openContinueModalWithPrefill(prefill) {
+            const container = document.getElementById('continueUrlList');
+            container.innerHTML = models.map(m => {
+                const existing = prefill[m.id] || '';
+                return `
+                <div class="continue-url-row">
+                    <div class="continue-url-label">
+                        <span class="badge badge-dark" style="font-size:0.75rem;">${escapeHtml(m.name)}</span>
+                    </div>
+                    <input type="url" class="continue-url-input" id="cont-url-${m.id}"
+                        placeholder="${escapeHtml(getSafeHttpUrl(m.chatUrl) || 'https://...')}"
+                        value="${escapeHtml(existing)}" />
+                </div>`;
+            }).join('');
+            document.getElementById('continueModal').classList.remove('hidden');
+        }
+
+        function closeContinueModal() {
+            document.getElementById('continueModal').classList.add('hidden');
+            // Reset currentThread if the modal was opened from openThread but not submitted
+            // Check if we're in a continuation flow that wasn't completed
+            if (currentThread && !isContinuation) {
+                // If currentThread was set but continuation wasn't submitted, reset it
+                currentThread = null;
+                continuationUrls = {};
+                renderInPageChatHistory();
+            }
+        }
+
+        function submitContinue() {
+            const newUrls = {};
+            let invalidUrls = 0;
+            models.forEach(m => {
+                const input = document.getElementById('cont-url-' + m.id);
+                if (!input || !input.value.trim()) return;
+                const safeUrl = getSafeHttpUrl(input.value);
+                if (safeUrl) {
+                    newUrls[m.id] = safeUrl;
+                } else {
+                    invalidUrls++;
+                }
+            });
+            continuationUrls = newUrls;
+            isContinuation = true;
+            closeContinueModal();
+            if (invalidUrls > 0) {
+                showSystemNotification('Часть ссылок пропущена: поддерживаются только http/https', 'warning', 3200);
+            }
+            // Clear input fields for new question, keep thread alive
+            document.getElementById('rawPrompt').value = '';
+            document.getElementById('improvedPrompt').value = '';
+            document.getElementById('finalAnswer').value = '';
+            modelRatings = {};
+            models.forEach(m => {
+                const el = document.getElementById(`answer-${m.id}`);
+                if (el) el.value = '';
+            });
+            renderModelCards();
+            setStep(1);
+        }
+    </script>
+</body>
+</html>
