@@ -40,7 +40,7 @@
 
 ### Вариант 1. Просто открыть файл
 
-Откройте [LLM Compare.html](LLM Compare.html) в браузере.
+Откройте [LLM-Compare.html](LLM-Compare.html) в браузере.
 
 ### Вариант 2. Через локальный статический сервер
 
@@ -54,7 +54,7 @@ py -m http.server 8000
 После этого откройте:
 
 ```text
-http://localhost:8000/LLM Compare.html
+http://localhost:8000/LLM-Compare.html
 ```
 
 ## Как пользоваться
@@ -86,7 +86,7 @@ http://localhost:8000/LLM Compare.html
 
 ## Структура проекта
 
-- [LLM Compare.html](LLM Compare.html) — основной интерфейс приложения
+- [LLM-Compare.html](LLM-Compare.html) — основной интерфейс приложения
 - [README.md](README.md) — описание проекта
 
 ## Для кого это
