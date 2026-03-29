@@ -589,7 +589,7 @@
 
         /* Arrow pulse animation for step navigation */
         .arrow {
-            animation: pulse 2s infinite;
+            animation: none;
         }
 
         /* Header wrap animation */
@@ -641,14 +641,14 @@
 
         /* Modal overlay backdrop blur effect */
         .modal-overlay {
-            backdrop-filter: blur(4px);
-            -webkit-backdrop-filter: blur(4px);
+            backdrop-filter: none;
+            -webkit-backdrop-filter: none;
         }
 
         /* History overlay subtle blur */
         .history-overlay {
-            backdrop-filter: blur(2px);
-            -webkit-backdrop-filter: blur(2px);
+            backdrop-filter: none;
+            -webkit-backdrop-filter: none;
         }
 
         /* ═══════════════════════════════════════════════════════════════
@@ -662,7 +662,7 @@
         }
 
         .input:focus, .textarea:focus {
-            animation: glowPulse 1.5s ease-in-out infinite;
+            animation: none;
         }
 
         /* Smooth card entrance with stagger */
@@ -751,7 +751,7 @@
         }
 
         .btn:disabled {
-            animation: loadingPulse 1.5s ease-in-out infinite;
+            animation: none;
         }
 
         /* Step button hover lift effect */
@@ -830,7 +830,7 @@
         }
 
         .continuation-badge {
-            animation: badgeGlow 2s ease-in-out infinite;
+            animation: none;
         }
 
         /* Smooth input label animation */
@@ -862,7 +862,7 @@
         }
 
         .arrow {
-            animation: arrowBounce 1.5s ease-in-out infinite, pulse 2s infinite;
+            animation: none;
         }
 
         /* Smooth code block entrance */
@@ -951,9 +951,9 @@
         }
 
         .loading-shimmer {
-            background: linear-gradient(90deg, var(--bg-card) 25%, var(--bg-hover) 50%, var(--bg-card) 75%);
-            background-size: 200% 100%;
-            animation: shimmer 1.5s infinite;
+            background: var(--bg-card);
+            background-size: auto;
+            animation: none;
         }
 
         /* ═══════════════════════════════════════════════════════════════
@@ -1013,7 +1013,7 @@
         }
         .autosave-indicator.saving .autosave-dot {
             background: #facc15;
-            animation: pulse 1s infinite;
+            animation: none;
         }
         .autosave-indicator.saved .autosave-dot {
             background: #22c55e;
@@ -1431,6 +1431,16 @@
             <div id="settings-general" class="tab-pane active">
                 <div class="modal-body space-y-6">
                     <div class="card" style="margin:0; padding:1.25rem;">
+                        <label for="taskProfileSelect" class="block text-sm font-medium mb-2">Профиль задачи</label>
+                        <select id="taskProfileSelect" class="input" onchange="handleTaskProfileChange(this.value)"></select>
+                        <p class="text-xs text-zinc-500 mt-2">Профиль меняет системные промты для улучшения и синтеза. Если вы вручную измените промты, профиль автоматически станет `Свой`.</p>
+                        <div class="mt-3 rounded-lg border border-zinc-200 bg-zinc-50 px-3 py-3">
+                            <div class="text-xs uppercase tracking-wide text-zinc-500 mb-1">Активный профиль</div>
+                            <div id="taskProfileName" class="text-sm font-medium text-zinc-900">Универсальный</div>
+                            <p id="taskProfileDescription" class="text-xs text-zinc-500 mt-1">Сбалансированный режим для большинства задач.</p>
+                        </div>
+                    </div>
+                    <div class="card" style="margin:0; padding:1.25rem;">
                         <label class="flex items-start gap-3 cursor-pointer">
                             <input type="checkbox" id="notificationsEnabledToggle" class="mt-1">
                             <div>
@@ -1509,14 +1519,14 @@
                             <label class="block text-sm font-medium">Промт для улучшения</label>
                             <button onclick="resetEnhancerPrompt()" class="text-xs text-blue-600 hover:underline">Сбросить</button>
                         </div>
-                        <textarea id="settingsEnhancerPrompt" class="textarea" style="min-height: 150px;"></textarea>
+                        <textarea id="settingsEnhancerPrompt" class="textarea" style="min-height: 150px;" oninput="syncTaskProfileFromPromptEditors()"></textarea>
                     </div>
                     <div>
                         <div class="flex items-center justify-between mb-2">
                             <label class="block text-sm font-medium">Промт для агрегации</label>
                             <button onclick="resetAggregatorPrompt()" class="text-xs text-blue-600 hover:underline">Сбросить</button>
                         </div>
-                        <textarea id="settingsAggregatorPrompt" class="textarea" style="min-height: 150px;" ></textarea>
+                        <textarea id="settingsAggregatorPrompt" class="textarea" style="min-height: 150px;" oninput="syncTaskProfileFromPromptEditors()"></textarea>
                     </div>
                 </div>
             </div>
@@ -1774,6 +1784,52 @@
 Делай не усреднение ответов, а их интеллектуальный синтез: сохраняй лучшее, отбрасывай слабое, исправляй ошибки и выдавай единый качественный результат.
 
 Жди описание задачи от пользователя.`;
+
+        const TASK_PROFILES = [
+            {
+                id: 'balanced',
+                name: 'Универсальный',
+                description: 'Сбалансированный режим для большинства задач: без перекоса в код, исследование или сверхкраткость.',
+                enhancerNote: '',
+                aggregatorNote: ''
+            },
+            {
+                id: 'research',
+                name: 'Исследование',
+                description: 'Для глубокого разбора темы, анализа неопределённостей, аргументов, ограничений и альтернатив.',
+                enhancerNote: `Сконструируй промт как исследовательскую задачу. Попроси модель отделять факты от гипотез, отмечать ограничения, указывать спорные места, рассматривать альтернативные объяснения и явно обозначать, где данных недостаточно.`,
+                aggregatorNote: `При синтезе делай акцент на точности, нюансах и честности. Отделяй подтверждённое от вероятного, показывай ограничения и открытые вопросы, не сглаживай реальные противоречия между вариантами.`
+            },
+            {
+                id: 'coding',
+                name: 'Код и отладка',
+                description: 'Для задач по программированию, дебагу, архитектуре, исправлению ошибок и техническим решениям.',
+                enhancerNote: `Сконструируй промт для сильного инженерного ответа. Попроси модель искать корневую причину проблемы, давать минимальный рабочий фикс, объяснять решение простыми словами, учитывать риски регрессии и добавлять шаги проверки результата.`,
+                aggregatorNote: `При синтезе ставь на первое место корректность технического решения. Сохраняй конкретику, шаги внедрения, риски, ограничения и способы проверки. Если варианты спорят, явно объясни, какой подход надёжнее и почему.`
+            },
+            {
+                id: 'concise',
+                name: 'Краткий ответ',
+                description: 'Для плотных, коротких и быстрых ответов без воды и лишних отвлечений.',
+                enhancerNote: `Сконструируй промт так, чтобы ответ был максимально лаконичным, но не поверхностным. Попроси убрать воду, повторы и второстепенные детали, сохранить только суть, ключевые пункты и конкретные выводы.`,
+                aggregatorNote: `При синтезе делай упор на краткость и плотность. Убирай повторы и второстепенные детали, сохраняй только самую полезную часть. Итог должен читаться быстро и без потери смысла.`
+            },
+            {
+                id: 'comparison',
+                name: 'Сравнение вариантов',
+                description: 'Для выбора между несколькими подходами, инструментами, решениями или стратегиями.',
+                enhancerNote: `Сконструируй промт как задачу сравнения вариантов. Попроси модель сравнивать решения по критериям, выделять плюсы, минусы, риски, ограничения, стоимость или сложность и завершать ответ рекомендацией по выбору.`,
+                aggregatorNote: `При синтезе оформи различия между вариантами особенно ясно. Сохраняй критерии сравнения, компромиссы и рекомендации. Если лучший вариант зависит от условий, явно укажи, при каких вводных какой вариант предпочтительнее.`
+            },
+            {
+                id: 'custom',
+                name: 'Свой',
+                description: 'Ручной режим: используются ваши текущие системные промты без автозамены.',
+                enhancerNote: '',
+                aggregatorNote: '',
+                isCustom: true
+            }
+        ];
 
         const DEFAULT_MODELS = [
             {
@@ -2046,10 +2102,16 @@
         let isContinuation = false;
         // Ratings: {modelId: 1-5}
         let modelRatings = {};
+        let answerDrafts = {};
+        let modelCardsDirty = true;
+        let comparisonDirty = true;
+        let currentTaskProfile = 'balanced';
         // Auto-save
         let autosaveTimer = null;
         let autosaveStepToRestore = 1;
         let notificationTimer = null;
+        const markdownCache = new Map();
+        const MAX_MARKDOWN_CACHE_ENTRIES = 100;
         let preferences = {
             notificationsEnabled: true,
             useRatingsInSynthesis: true
@@ -2209,11 +2271,63 @@
         // AUTO-SAVE SYSTEM
         // ═══════════════════════════════════════════════════════════════
 
+        function pruneModelScopedState() {
+            const validIds = new Set(models.map((m) => String(m.id)));
+            answerDrafts = Object.fromEntries(
+                Object.entries(answerDrafts).filter(([modelId]) => validIds.has(String(modelId)))
+            );
+            modelRatings = Object.fromEntries(
+                Object.entries(modelRatings).filter(([modelId]) => validIds.has(String(modelId)))
+            );
+            continuationUrls = Object.fromEntries(
+                Object.entries(continuationUrls).filter(([modelId]) => validIds.has(String(modelId)))
+            );
+        }
+
+        function getAnswerValue(modelId) {
+            const el = document.getElementById(`answer-${modelId}`);
+            if (el) {
+                answerDrafts[modelId] = el.value;
+                return el.value;
+            }
+            return answerDrafts[modelId] || '';
+        }
+
+        function getTrimmedAnswerValue(modelId) {
+            return getAnswerValue(modelId).trim();
+        }
+
+        function setAnswerValue(modelId, value) {
+            const nextValue = value || '';
+            answerDrafts[modelId] = nextValue;
+            const el = document.getElementById(`answer-${modelId}`);
+            if (el && el.value !== nextValue) {
+                el.value = nextValue;
+            }
+            comparisonDirty = true;
+        }
+
+        function clearAnswerDrafts() {
+            answerDrafts = {};
+            comparisonDirty = true;
+        }
+
+        function handleAnswerInput(modelId, value) {
+            answerDrafts[modelId] = value;
+            comparisonDirty = true;
+            autoSave();
+        }
+
+        function ensureModelCardsRendered(force = false) {
+            if (!force && !modelCardsDirty) return;
+            renderModelCards();
+        }
+
         function getAutoSaveState() {
             const answers = {};
             models.forEach(m => {
-                const el = document.getElementById(`answer-${m.id}`);
-                if (el) answers[m.id] = el.value;
+                const value = getAnswerValue(m.id);
+                if (value) answers[m.id] = value;
             });
             return {
                 rawPrompt: document.getElementById('rawPrompt').value,
@@ -2250,11 +2364,11 @@
                 document.getElementById('rawPrompt').value = state.rawPrompt || '';
                 document.getElementById('improvedPrompt').value = state.improvedPrompt || '';
                 document.getElementById('finalAnswer').value = state.finalAnswer || '';
+                clearAnswerDrafts();
 
                 if (state.answers) {
                     Object.entries(state.answers).forEach(([modelId, value]) => {
-                        const el = document.getElementById(`answer-${modelId}`);
-                        if (el) el.value = value;
+                        setAnswerValue(modelId, value);
                     });
                 }
 
@@ -2262,8 +2376,10 @@
                 if (Object.keys(modelRatings).length === 0 && state.criteriaRatings) {
                     modelRatings = migrateCriteriaRatingsToOverall(state.criteriaRatings);
                 }
+                pruneModelScopedState();
 
                 models.forEach((m) => updateRatingDisplay(m.id));
+                comparisonDirty = true;
                 refreshComparisonView();
 
                 autosaveStepToRestore = state.currentStep || 1;
@@ -2347,6 +2463,7 @@
             } else {
                 modelRatings[modelId] = rating;
             }
+            comparisonDirty = true;
             updateRatingDisplay(modelId);
             refreshComparisonView();
             autoSave();
@@ -2406,16 +2523,12 @@
                 avgEl.textContent = getAverageRating();
             }
 
-            const comparisonTab = document.getElementById('result-comparison');
-            if (!comparisonTab) return;
+            if (currentStep !== 5 || currentResultTab !== 'comparison') return;
+            if (!comparisonDirty) return;
 
-            const isComparisonVisible = !comparisonTab.classList.contains('hidden');
-            const isResultsStepVisible = currentStep === 5;
-            if (isComparisonVisible || isResultsStepVisible) {
-                renderComparison();
-                if (avgEl) {
-                    avgEl.textContent = getAverageRating();
-                }
+            renderComparison();
+            if (avgEl) {
+                avgEl.textContent = getAverageRating();
             }
         }
 
@@ -2433,19 +2546,21 @@
             const container = document.getElementById('comparisonGrid');
             if (!container) return;
 
-            const answersWithContent = models.filter(m => {
-                const el = document.getElementById(`answer-${m.id}`);
-                return el && el.value.trim();
-            });
+            const answersWithContent = models
+                .map((m) => ({
+                    ...m,
+                    answer: getTrimmedAnswerValue(m.id)
+                }))
+                .filter((m) => m.answer);
 
             if (answersWithContent.length === 0) {
                 container.innerHTML = '<div class="comparison-empty"><svg class="w-10 h-10 mx-auto mb-3 text-zinc-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg><p>Нет ответов для сравнения</p><p class="text-xs mt-1">Добавьте ответы от моделей на шаге 3</p></div>';
+                comparisonDirty = false;
                 return;
             }
 
             container.innerHTML = answersWithContent.map(m => {
-                const el = document.getElementById(`answer-${m.id}`);
-                const answer = el ? el.value.trim() : '';
+                const answer = m.answer;
                 const rating = modelRatings[m.id] || 0;
                 const ratingStars = '★'.repeat(rating) + '☆'.repeat(5 - rating);
 
@@ -2463,7 +2578,7 @@
                     </div>
                     <div class="comparison-card-footer">
                         ${renderStarRating(m.id)}
-                        <button class="btn btn-copy btn-sm btn-icon" data-icon-size="w-3.5 h-3.5" title="Скопировать ответ модели" aria-label="Скопировать ответ модели" onclick="copyText(document.getElementById('answer-${m.id}').value, 'comp-copy-${m.id}')" id="comp-copy-${m.id}">
+                        <button class="btn btn-copy btn-sm btn-icon" data-icon-size="w-3.5 h-3.5" title="Скопировать ответ модели" aria-label="Скопировать ответ модели" onclick="copyModelAnswer('${m.id}', 'comp-copy-${m.id}')" id="comp-copy-${m.id}">
                             <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg>
                         </button>
                     </div>
@@ -2472,6 +2587,7 @@
 
             // Render code blocks in comparison cards
             container.querySelectorAll('.comparison-card-body').forEach(el => renderCodeBlocks(el));
+            comparisonDirty = false;
         }
 
         // Initialize
@@ -2484,6 +2600,9 @@
             
             // Restore auto-saved data
             if (await restoreAutoSave()) {
+                if (autosaveStepToRestore >= 3) {
+                    ensureModelCardsRendered();
+                }
                 setStep(autosaveStepToRestore);
             } else {
                 setStep(1);
@@ -2556,6 +2675,82 @@
             else { light.classList.remove('hidden'); dark.classList.add('hidden'); }
         }
 
+        function getTaskProfileById(profileId) {
+            return TASK_PROFILES.find((profile) => profile.id === profileId) || TASK_PROFILES[0];
+        }
+
+        function buildTaskProfilePrompt(basePrompt, profileId, promptKind) {
+            const profile = getTaskProfileById(profileId);
+            if (!profile || profile.isCustom) return basePrompt;
+
+            const note = promptKind === 'enhancer' ? profile.enhancerNote : profile.aggregatorNote;
+            if (!note) return basePrompt;
+
+            return `${basePrompt}\n\nПРОФИЛЬ ЗАДАЧИ: ${profile.name.toUpperCase()}\n${note}`;
+        }
+
+        function buildTaskProfilePrompts(profileId) {
+            const effectiveProfileId = getTaskProfileById(profileId).isCustom ? 'balanced' : profileId;
+            return {
+                enhancer: buildTaskProfilePrompt(DEFAULT_ENHANCER_SYSTEM, effectiveProfileId, 'enhancer'),
+                aggregator: buildTaskProfilePrompt(DEFAULT_AGGREGATOR_SYSTEM, effectiveProfileId, 'aggregator')
+            };
+        }
+
+        function inferTaskProfileId(enhancerPrompt, aggregatorPrompt) {
+            for (const profile of TASK_PROFILES) {
+                if (profile.isCustom) continue;
+                const prompts = buildTaskProfilePrompts(profile.id);
+                if (prompts.enhancer === enhancerPrompt && prompts.aggregator === aggregatorPrompt) {
+                    return profile.id;
+                }
+            }
+            return 'custom';
+        }
+
+        function renderTaskProfileOptions() {
+            const select = document.getElementById('taskProfileSelect');
+            if (!select) return;
+
+            select.innerHTML = TASK_PROFILES.map((profile) => (
+                `<option value="${escapeHtml(profile.id)}">${escapeHtml(profile.name)}</option>`
+            )).join('');
+        }
+
+        function updateTaskProfileUi(profileId = currentTaskProfile) {
+            const profile = getTaskProfileById(profileId);
+            const select = document.getElementById('taskProfileSelect');
+            const nameEl = document.getElementById('taskProfileName');
+            const descriptionEl = document.getElementById('taskProfileDescription');
+
+            if (select) select.value = profile.id;
+            if (nameEl) nameEl.textContent = profile.name;
+            if (descriptionEl) descriptionEl.textContent = profile.description;
+        }
+
+        function handleTaskProfileChange(profileId) {
+            currentTaskProfile = profileId || 'balanced';
+            updateTaskProfileUi(currentTaskProfile);
+
+            const profile = getTaskProfileById(currentTaskProfile);
+            if (profile.isCustom) return;
+
+            const prompts = buildTaskProfilePrompts(profile.id);
+            const enhancerField = document.getElementById('settingsEnhancerPrompt');
+            const aggregatorField = document.getElementById('settingsAggregatorPrompt');
+            if (enhancerField) enhancerField.value = prompts.enhancer;
+            if (aggregatorField) aggregatorField.value = prompts.aggregator;
+        }
+
+        function syncTaskProfileFromPromptEditors() {
+            const enhancerField = document.getElementById('settingsEnhancerPrompt');
+            const aggregatorField = document.getElementById('settingsAggregatorPrompt');
+            if (!enhancerField || !aggregatorField) return;
+
+            currentTaskProfile = inferTaskProfileId(enhancerField.value, aggregatorField.value);
+            updateTaskProfileUi(currentTaskProfile);
+        }
+
         // Settings functions
         let templates = [];
 
@@ -2575,8 +2770,10 @@
             }
 
             models = savedModels ? JSON.parse(savedModels) : [...DEFAULT_MODELS];
-            enhancerSystem = savedEnhancer || DEFAULT_ENHANCER_SYSTEM;
-            aggregatorSystem = savedAggregator || DEFAULT_AGGREGATOR_SYSTEM;
+            const defaultProfilePrompts = buildTaskProfilePrompts('balanced');
+            enhancerSystem = savedEnhancer || defaultProfilePrompts.enhancer;
+            aggregatorSystem = savedAggregator || defaultProfilePrompts.aggregator;
+            currentTaskProfile = inferTaskProfileId(enhancerSystem, aggregatorSystem);
             const templateMap = new Map(DEFAULT_TEMPLATES.map((template) => [template.name, { ...template }]));
             if (Array.isArray(parsedTemplates)) {
                 parsedTemplates.forEach((template) => {
@@ -2588,9 +2785,11 @@
                 });
             }
             templates = Array.from(templateMap.values());
+            pruneModelScopedState();
+            modelCardsDirty = true;
+            comparisonDirty = true;
 
             updateModelsCount();
-            renderModelCards();
             updatePromptDisplays();
         }
 
@@ -2598,6 +2797,7 @@
             // Save prompts from textarea
             enhancerSystem = document.getElementById('settingsEnhancerPrompt').value;
             aggregatorSystem = document.getElementById('settingsAggregatorPrompt').value;
+            currentTaskProfile = inferTaskProfileId(enhancerSystem, aggregatorSystem);
             preferences.notificationsEnabled = document.getElementById('notificationsEnabledToggle').checked;
             preferences.useRatingsInSynthesis = document.getElementById('useRatingsInSynthesisToggle').checked;
 
@@ -2611,19 +2811,27 @@
                 hideNotificationIndicator();
             }
 
-            renderModelCards();
+            pruneModelScopedState();
+            modelCardsDirty = true;
+            comparisonDirty = true;
+            if (currentStep === 3) {
+                ensureModelCardsRendered(true);
+            }
             updatePromptDisplays();
             closeSettings();
         }
 
         function openSettings() {
             document.getElementById('settingsModal').classList.remove('hidden');
+            renderTaskProfileOptions();
             renderModelsList();
             renderTemplatesList();
             document.getElementById('settingsEnhancerPrompt').value = enhancerSystem;
             document.getElementById('settingsAggregatorPrompt').value = aggregatorSystem;
             document.getElementById('notificationsEnabledToggle').checked = preferences.notificationsEnabled;
             document.getElementById('useRatingsInSynthesisToggle').checked = preferences.useRatingsInSynthesis;
+            currentTaskProfile = inferTaskProfileId(enhancerSystem, aggregatorSystem);
+            updateTaskProfileUi(currentTaskProfile);
             setSettingsTab('general');
         }
 
@@ -2712,7 +2920,7 @@
                 localStorage.setItem('multillm_models', JSON.stringify(models));
                 renderModelsList();
                 updateModelsCount();
-                renderModelCards();
+                invalidateModelViews();
                 updatePromptDisplays();
             }
         }
@@ -2728,7 +2936,7 @@
                 localStorage.setItem('multillm_models', JSON.stringify(models));
                 renderModelsList();
                 updateModelsCount();
-                renderModelCards();
+                invalidateModelViews();
             }
         }
 
@@ -2738,7 +2946,7 @@
                 localStorage.setItem('multillm_models', JSON.stringify(models));
                 renderModelsList();
                 updateModelsCount();
-                renderModelCards();
+                invalidateModelViews();
             }
         }
 
@@ -2767,6 +2975,7 @@
 
             renderModelsList();
             updateModelsCount();
+            invalidateModelViews();
         }
 
         function editModel(index) {
@@ -2785,6 +2994,7 @@
             models[index].chatUrl = newChatUrl !== null ? newChatUrl.trim() : model.chatUrl;
 
             renderModelsList();
+            invalidateModelViews();
         }
 
         function deleteModel(index) {
@@ -2792,15 +3002,18 @@
                 models.splice(index, 1);
                 renderModelsList();
                 updateModelsCount();
+                invalidateModelViews();
             }
         }
 
         function resetEnhancerPrompt() {
-            document.getElementById('settingsEnhancerPrompt').value = DEFAULT_ENHANCER_SYSTEM;
+            document.getElementById('settingsEnhancerPrompt').value = buildTaskProfilePrompts(currentTaskProfile).enhancer;
+            syncTaskProfileFromPromptEditors();
         }
 
         function resetAggregatorPrompt() {
-            document.getElementById('settingsAggregatorPrompt').value = DEFAULT_AGGREGATOR_SYSTEM;
+            document.getElementById('settingsAggregatorPrompt').value = buildTaskProfilePrompts(currentTaskProfile).aggregator;
+            syncTaskProfileFromPromptEditors();
         }
 
         // ─── TEMPLATE MANAGEMENT ─────────────────────────────────────────────
@@ -2859,14 +3072,19 @@
             document.getElementById('modelsCount').textContent = `Моделей: ${models.length}`;
         }
 
+        function invalidateModelViews() {
+            pruneModelScopedState();
+            modelCardsDirty = true;
+            comparisonDirty = true;
+            if (currentStep === 3) {
+                ensureModelCardsRendered(true);
+            }
+        }
+
         function renderModelCards() {
             const container = document.getElementById('modelCardsContainer');
-            const answerDrafts = {};
-
-            models.forEach((m) => {
-                const answerEl = document.getElementById(`answer-${m.id}`);
-                if (answerEl) answerDrafts[m.id] = answerEl.value;
-            });
+            if (!container) return;
+            pruneModelScopedState();
 
             container.innerHTML = models.map(m => {
                 const contUrl = getSafeHttpUrl(continuationUrls[m.id]);
@@ -2899,10 +3117,11 @@
                             ${renderStarRating(m.id)}
                         </div>
                         <p class="text-zinc-500 text-sm mb-2">Вставьте ответ от ${escapeHtml(m.name)}:</p>
-                        <textarea id="answer-${m.id}" class="textarea" placeholder="Вставьте ответ от ${escapeHtml(m.name)}..." oninput="autoSave()">${escapeHtml(answerValue)}</textarea>
+                        <textarea id="answer-${m.id}" class="textarea" placeholder="Вставьте ответ от ${escapeHtml(m.name)}..." oninput="handleAnswerInput('${m.id}', this.value)">${escapeHtml(answerValue)}</textarea>
                     </div>
                 </div>
             `}).join('');
+            modelCardsDirty = false;
         }
 
         function copyModelSystemPrompt(modelId, event) {
@@ -2991,9 +3210,7 @@
                 return;
             }
             if (step === 4) {
-                const hasAnswers = models.some(m => 
-                    document.getElementById(`answer-${m.id}`)?.value.trim()
-                );
+                const hasAnswers = models.some((m) => getTrimmedAnswerValue(m.id));
                 if (!hasAnswers) {
                     alert('Добавьте хотя бы один ответ от модели');
                     return;
@@ -3005,6 +3222,10 @@
             }
 
             currentStep = step;
+
+            if (step === 3) {
+                ensureModelCardsRendered();
+            }
 
             // Refresh in-page chat history when on step 1
             if (step === 1) renderInPageChatHistory();
@@ -3064,15 +3285,14 @@
             return 'Вот исходный запрос пользователя:\n«' + document.getElementById('rawPrompt').value + '»';
         }
 
-        function generateAggregatorPrompt() {
+        function generateAggregatorPromptLegacy() {
             const improvedPrompt = document.getElementById('improvedPrompt').value;
             const useRatings = preferences.useRatingsInSynthesis;
 
             let answersText = '';
             let index = 1;
             models.forEach(m => {
-                const el = document.getElementById(`answer-${m.id}`);
-                const answer = el ? el.value.trim() : '';
+                const answer = getTrimmedAnswerValue(m.id);
                 if (answer) {
                     let ratingText = '';
                     if (useRatings) {
@@ -3104,16 +3324,57 @@ ${ratingsGuidance}Ответы разных моделей:
 ${answersText}`;
         }
 
+        // Blind synthesis: keep model/provider names out of the aggregator prompt.
+        function generateAggregatorPrompt() {
+            const improvedPrompt = document.getElementById('improvedPrompt').value;
+            const useRatings = preferences.useRatingsInSynthesis;
+
+            let answersText = '';
+            let index = 1;
+            models.forEach((m) => {
+                const answer = getTrimmedAnswerValue(m.id);
+                if (!answer) return;
+
+                let ratingText = '';
+                if (useRatings) {
+                    const rating = modelRatings[m.id];
+                    ratingText = rating
+                        ? `Пользовательская оценка этого варианта: ${rating}/5. Это мягкий сигнал предпочтения, а не гарантия фактической точности.\n`
+                        : 'Пользовательская оценка этого варианта: не указана. Это нейтральный случай; не считай отсутствие оценки минусом.\n';
+                }
+
+                answersText += `Вариант ${index}:\n${ratingText}«${answer}»\n\n`;
+                index++;
+            });
+
+            const ratingsGuidance = useRatings
+                ? `Интерпретация оценок пользователя:
+- Если у варианта есть оценка, учитывай её как дополнительный сигнал полезности и предпочтения пользователя.
+- Не подменяй пользовательской оценкой фактическую точность, логическую согласованность и полноту.
+- Если оценка отсутствует, считай это отсутствием сигнала, а не негативной оценкой.
+
+`
+                : '';
+
+            return `Исходный вопрос (улучшенный промт):
+«${improvedPrompt}»
+
+${ratingsGuidance}Ниже несколько обезличенных вариантов ответа. Названия моделей и провайдеров намеренно скрыты; оценивай только содержание, логику, полезность и ясность.
+
+Обезличенные варианты:
+
+${answersText}`;
+        }
+
         function generateResultJSON() {
             const answers = models
                 .map(m => {
-                    const el = document.getElementById(`answer-${m.id}`);
                     return {
                         model_id: m.id,
                         model_name: m.name,
                         provider: m.provider,
                         user_rating: modelRatings[m.id] ?? null,
-                        answer_text: el ? el.value.trim() : ''
+                        answer_text: getTrimmedAnswerValue(m.id)
                     };
                 })
                 .filter(a => a.answer_text);
@@ -3138,7 +3399,9 @@ ${answersText}`;
             // Final answer tab - render markdown
             const finalAnswerContent = document.getElementById('finalAnswer').value;
             renderMarkdownInto(document.getElementById('finalAnswerDisplay'), finalAnswerContent);
-            refreshComparisonView();
+            if (currentResultTab === 'comparison') {
+                refreshComparisonView();
+            }
         }
 
         function escapeHtml(text) {
@@ -3256,7 +3519,18 @@ ${answersText}`;
         }
 
         function parseMarkdown(text) {
-            return sanitizeMarkdownHtml(marked.parse(text || '', { breaks: true, gfm: true }));
+            const source = text || '';
+            if (!source.trim()) return '';
+
+            const cached = markdownCache.get(source);
+            if (cached) return cached;
+
+            const rendered = sanitizeMarkdownHtml(marked.parse(source, { breaks: true, gfm: true }));
+            if (markdownCache.size >= MAX_MARKDOWN_CACHE_ENTRIES) {
+                markdownCache.clear();
+            }
+            markdownCache.set(source, rendered);
+            return rendered;
         }
 
         function renderMarkdownInto(container, text) {
@@ -3362,6 +3636,10 @@ ${answersText}`;
             });
         }
 
+        function copyModelAnswer(modelId, buttonId) {
+            copyText(getAnswerValue(modelId), buttonId);
+        }
+
         function copyText(text, buttonId) {
             // Handle special constants
             if (text === 'ENHANCER_SYSTEM') text = enhancerSystem;
@@ -3414,6 +3692,9 @@ ${answersText}`;
             currentThread = null;
             modelRatings = {};
             clearAutoSave();
+            clearAnswerDrafts();
+            modelCardsDirty = true;
+            comparisonDirty = true;
             
             document.getElementById('rawPrompt').value = '';
             document.getElementById('improvedPrompt').value = '';
@@ -3669,6 +3950,9 @@ ${answersText}`;
             currentThread = thread;
             isContinuation = thread.turns.length > 0;
             modelRatings = {};
+            clearAnswerDrafts();
+            modelCardsDirty = true;
+            comparisonDirty = true;
             models.forEach(m => {
                 const answerEl = document.getElementById(`answer-${m.id}`);
                 if (answerEl) answerEl.value = '';
@@ -3760,11 +4044,13 @@ ${answersText}`;
             document.getElementById('improvedPrompt').value = '';
             document.getElementById('finalAnswer').value = '';
             modelRatings = {};
+            clearAnswerDrafts();
+            modelCardsDirty = true;
+            comparisonDirty = true;
             models.forEach(m => {
                 const el = document.getElementById(`answer-${m.id}`);
                 if (el) el.value = '';
             });
-            renderModelCards();
             setStep(1);
         }
     </script>
