@@ -193,7 +193,7 @@
         .md-content em { font-style: italic; }
         /* Collapsible Sections */
         .answer-section { margin-bottom: 1.2rem; border: 1px solid var(--border); border-radius: 0.6rem; overflow: hidden; }
-        .answer-section-header { display: flex; align-items: center; justify-content: space-between; padding: 1rem 1.25rem; background: var(--bg-card-alt); cursor: pointer; user-select: none; }
+        .answer-section-header { display: flex; align-items: center; justify-content: space-between; padding: 1rem 1.25rem; background: var(--bg-card-alt); cursor: pointer; -webkit-user-select: none; user-select: none; }
         .answer-section-header:hover { background: var(--bg-btn-copy); }
         .answer-section-header-left { display: flex; align-items: center; gap: 0.6rem; }
         .answer-section-toggle { width: 24px; height: 24px; transition: transform 0.2s; color: var(--text-muted); }
@@ -357,9 +357,6 @@
             /* Model card action buttons */
             .answer-section-content .flex.flex-wrap { gap: 0.4rem; }
             .answer-section-content .flex.flex-wrap .btn { flex: 1; min-width: 0; justify-content: center; font-size: 0.8rem; }
-        }
-            .header-title h1 { font-size: 1.1rem !important; }
-            .btn { font-size: 0.82rem; padding: 0.6rem 0.7rem; }
         }
 
         [data-theme="dark"] .btn-copy.copied { background: rgba(34,197,94,0.15); color: #4ade80; }
@@ -1116,6 +1113,165 @@
                 max-height: 250px;
             }
         }
+
+        /* ═══════════════════════════════════════════════════════════════
+           LOCAL AI PROVIDER CARDS
+           ═══════════════════════════════════════════════════════════════ */
+        .lms-provider-card {
+            border-color: var(--border);
+            background: var(--bg-card);
+            color: var(--text);
+            transition: all 0.18s ease;
+        }
+        .lms-provider-card:hover {
+            border-color: #818cf8;
+            background: rgba(99,102,241,0.04);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(99,102,241,0.12);
+        }
+        .lms-provider-card.selected {
+            border-color: #6366f1;
+            background: rgba(99,102,241,0.08);
+            box-shadow: 0 0 0 3px rgba(99,102,241,0.15);
+        }
+        [data-theme="dark"] .lms-provider-card.selected {
+            background: rgba(99,102,241,0.15);
+        }
+        .lms-status {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            padding: 0.3rem 0.75rem;
+            border-radius: 2rem;
+            font-size: 0.8rem;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+        .lms-status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            flex-shrink: 0;
+        }
+        .lms-status.connected {
+            background: #dcfce7;
+            color: #15803d;
+        }
+        .lms-status.connected .lms-status-dot { background: #22c55e; animation: lmsPulse 2s infinite; }
+        .lms-status.disconnected {
+            background: var(--bg-badge-light);
+            color: var(--text-muted);
+        }
+        .lms-status.disconnected .lms-status-dot { background: var(--text-placeholder); }
+        .lms-status.checking {
+            background: #fef9c3;
+            color: #a16207;
+        }
+        .lms-status.checking .lms-status-dot { background: #facc15; animation: lmsPulse 0.8s infinite; }
+        .lms-status.error {
+            background: #fee2e2;
+            color: #b91c1c;
+        }
+        .lms-status.error .lms-status-dot { background: #ef4444; }
+        @keyframes lmsPulse {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.6; transform: scale(0.85); }
+        }
+        [data-theme="dark"] .lms-status.connected { background: rgba(34,197,94,0.15); color: #4ade80; }
+        [data-theme="dark"] .lms-status.error { background: rgba(239,68,68,0.15); color: #f87171; }
+        [data-theme="dark"] .lms-status.checking { background: rgba(250,204,21,0.15); color: #fbbf24; }
+
+        .btn-ai {
+            background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+            color: #fff;
+            border: none;
+            position: relative;
+            overflow: hidden;
+        }
+        .btn-ai:hover { background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%); }
+        .btn-ai:disabled { background: var(--text-placeholder); cursor: not-allowed; }
+        .btn-ai.loading { pointer-events: none; }
+        .btn-ai.loading::after {
+            content: '';
+            position: absolute;
+            top: 0; left: -100%;
+            width: 100%; height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            animation: aiShimmer 1.2s infinite;
+        }
+        @keyframes aiShimmer {
+            0% { left: -100%; }
+            100% { left: 100%; }
+        }
+        .ai-result-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.35rem;
+            font-size: 0.72rem;
+            font-weight: 500;
+            color: #6366f1;
+            background: rgba(99,102,241,0.1);
+            border: 1px solid rgba(99,102,241,0.25);
+            padding: 0.2rem 0.55rem;
+            border-radius: 0.3rem;
+            animation: fadeIn 0.3s ease-out;
+        }
+        [data-theme="dark"] .ai-result-badge { color: #a5b4fc; background: rgba(99,102,241,0.15); border-color: rgba(99,102,241,0.3); }
+
+        /* ═══════════════════════════════════════════════════════════════
+           LOGS PANEL STYLES
+           ═══════════════════════════════════════════════════════════════ */
+        .log-entry {
+            padding: 0.5rem 0.75rem;
+            border-bottom: 1px solid var(--border-light);
+            font-family: 'Consolas', 'Monaco', monospace;
+            font-size: 0.78rem;
+            line-height: 1.5;
+            display: flex;
+            gap: 0.6rem;
+            align-items: flex-start;
+        }
+        .log-entry:last-child { border-bottom: none; }
+        .log-entry:hover { background: var(--bg-hover); }
+        .log-time { color: var(--text-muted); flex-shrink: 0; font-size: 0.72rem; padding-top: 0.05rem; }
+        .log-level {
+            flex-shrink: 0;
+            font-weight: 700;
+            font-size: 0.7rem;
+            padding: 0.1rem 0.35rem;
+            border-radius: 0.2rem;
+            text-transform: uppercase;
+            letter-spacing: 0.03em;
+        }
+        .log-level.info { background: rgba(59,130,246,0.12); color: #3b82f6; }
+        .log-level.warn { background: rgba(245,158,11,0.12); color: #d97706; }
+        .log-level.error { background: rgba(239,68,68,0.12); color: #ef4444; }
+        .log-level.success { background: rgba(34,197,94,0.12); color: #16a34a; }
+        .log-message { flex: 1; color: var(--text); word-break: break-word; }
+        .log-details { margin-top: 0.25rem; color: var(--text-muted); font-size: 0.72rem; white-space: pre-wrap; word-break: break-all; }
+        .logs-empty { text-align: center; padding: 2.5rem 1rem; color: var(--text-placeholder); font-size: 0.9rem; }
+        .logs-container {
+            background: var(--bg-card-alt);
+            border: 1px solid var(--border);
+            border-radius: 0.5rem;
+            max-height: 340px;
+            overflow-y: auto;
+        }
+        .log-count-badge {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 1.3rem;
+            height: 1.3rem;
+            background: #ef4444;
+            color: #fff;
+            border-radius: 2rem;
+            font-size: 0.68rem;
+            font-weight: 700;
+            padding: 0 0.3rem;
+            margin-left: 0.35rem;
+            animation: badgePop 0.3s ease-out;
+        }
     </style>
 </head>
 <body style="background: linear-gradient(to bottom, var(--bg-gradient-from), var(--bg-gradient-to)); min-height: 100vh;">
@@ -1128,6 +1284,10 @@
         <!-- Header -->
         <div class="header-wrap flex mb-5">
             <div class="header-btn-group">
+                <a href="api-docs.html" target="_blank" class="btn btn-outline btn-sm" title="API Документация">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"></path></svg>
+                    <span class="hidden sm:inline">API</span>
+                </a>
                 <button onclick="openHistory()" class="btn btn-outline btn-sm" title="История запросов">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
                     <span class="hidden sm:inline">История</span>
@@ -1246,10 +1406,50 @@
                 <div class="code-block" id="enhancerUserPrompt"></div>
             </div>
 
+            <!-- LM Studio button for prompt improvement -->
+            <div id="lms-enhancer-panel" class="card hidden" style="border-color: rgba(99,102,241,0.35); background: rgba(99,102,241,0.04);">
+                <div class="flex items-center justify-between flex-wrap gap-3">
+                    <div class="flex items-center gap-2">
+                        <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" style="color:#6366f1;"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/></svg>
+                        <div>
+                            <span class="text-sm font-medium" style="color:#6366f1;">Отправить в провайдера</span>
+                            <div class="text-xs text-zinc-500 mt-0.5" id="lms-enhancer-model-hint"><span id="lms-enhancer-provider-label">Локальный ИИ</span> · <span id="lms-enhancer-model-name">—</span></div>
+                        </div>
+                    </div>
+                    <button id="lms-send-enhancer-btn" class="btn btn-ai btn-sm" onclick="sendEnhancerToLmStudio()">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+                        Отправить в ИИ
+                    </button>
+                </div>
+                <div id="lms-enhancer-status" class="mt-2 text-xs hidden"></div>
+            </div>
+
+            <!-- Hugging Face button for prompt improvement -->
+            <div id="hf-enhancer-panel" class="card hidden" style="border-color: rgba(250,204,21,0.35); background: rgba(250,204,21,0.04);">
+                <div class="flex items-center justify-between flex-wrap gap-3">
+                    <div class="flex items-center gap-2">
+                        <span class="text-lg">🤗</span>
+                        <div>
+                            <span class="text-sm font-medium" style="color:#eab308;">Отправить в Hugging Face</span>
+                            <div class="text-xs text-zinc-500 mt-0.5" id="hf-enhancer-model-hint">Inference API · <span id="hf-enhancer-model-name">—</span></div>
+                        </div>
+                    </div>
+                    <button id="hf-send-enhancer-btn" class="btn btn-ai btn-sm" style="background: linear-gradient(135deg, #eab308 0%, #f59e0b 100%);" onclick="sendEnhancerToHf()">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+                        Отправить в HF
+                    </button>
+                </div>
+                <div id="hf-enhancer-status" class="mt-2 text-xs hidden"></div>
+            </div>
+
             <div class="card">
                 <h2 class="text-xl font-semibold mb-1 flex items-center gap-2">
                     <svg class="w-5 h-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"></path></svg>
                     3. Вставьте улучшенный промт
+                    <span id="lms-enhancer-filled-badge" class="ai-result-badge hidden">
+                        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/></svg>
+                        Заполнено ИИ
+                    </span>
                 </h2>
                 <p class="text-zinc-500 text-sm mb-4">Вставьте сюда ответ от ИИ (улучшенный промт)</p>
                 <textarea id="improvedPrompt" class="textarea" placeholder="Вставьте улучшенный промт сюда..."></textarea>
@@ -1325,8 +1525,49 @@
                 <h2 class="text-xl font-semibold mb-1 flex items-center gap-2">
                     <svg class="w-5 h-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"></path></svg>
                     3. Вставьте синтезированный ответ
+                    <span id="lms-aggregator-filled-badge" class="ai-result-badge hidden">
+                        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/></svg>
+                        Заполнено ИИ
+                    </span>
                 </h2>
                 <p class="text-zinc-500 text-sm mb-4">Вставьте сюда финальный агрегированный ответ</p>
+
+                <!-- LM Studio button for synthesis -->
+                <div id="lms-aggregator-panel" class="mb-4 p-3 rounded-lg hidden" style="border: 1px solid rgba(99,102,241,0.35); background: rgba(99,102,241,0.04);">
+                    <div class="flex items-center justify-between flex-wrap gap-3">
+                        <div class="flex items-center gap-2">
+                            <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" style="color:#6366f1;"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/></svg>
+                            <div>
+                                <span class="text-sm font-medium" style="color:#6366f1;">Отправить в провайдера</span>
+                                <div class="text-xs text-zinc-500 mt-0.5"><span id="lms-aggregator-provider-label">Локальный ИИ</span> · <span id="lms-aggregator-model-name">—</span></div>
+                            </div>
+                        </div>
+                        <button id="lms-send-aggregator-btn" class="btn btn-ai btn-sm" onclick="sendAggregatorToLmStudio()">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+                            Отправить в ИИ
+                        </button>
+                    </div>
+                    <div id="lms-aggregator-status" class="mt-2 text-xs hidden"></div>
+                </div>
+
+                <!-- Hugging Face button for synthesis -->
+                <div id="hf-aggregator-panel" class="mb-4 p-3 rounded-lg hidden" style="border: 1px solid rgba(250,204,21,0.35); background: rgba(250,204,21,0.04);">
+                    <div class="flex items-center justify-between flex-wrap gap-3">
+                        <div class="flex items-center gap-2">
+                            <span class="text-lg">🤗</span>
+                            <div>
+                                <span class="text-sm font-medium" style="color:#eab308;">Отправить в Hugging Face</span>
+                                <div class="text-xs text-zinc-500 mt-0.5">Inference API · <span id="hf-aggregator-model-name">—</span></div>
+                            </div>
+                        </div>
+                        <button id="hf-send-aggregator-btn" class="btn btn-ai btn-sm" style="background: linear-gradient(135deg, #eab308 0%, #f59e0b 100%);" onclick="sendAggregatorToHf()">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+                            Отправить в HF
+                        </button>
+                    </div>
+                    <div id="hf-aggregator-status" class="mt-2 text-xs hidden"></div>
+                </div>
+
                 <textarea id="finalAnswer" class="textarea" style="min-height: 180px;" placeholder="Вставьте синтезированный ответ..."></textarea>
                 <div class="step-actions flex justify-between mt-4">
                     <button class="btn btn-outline" onclick="setStep(3)">Назад</button>
@@ -1420,11 +1661,13 @@
             </div>
             
             <!-- Settings Tabs -->
-            <div class="flex border-b border-zinc-200 px-6 pt-4">
+            <div class="flex border-b border-zinc-200 px-6 pt-4 overflow-x-auto" style="scrollbar-width:none;">
                 <button class="settings-tab active" onclick="setSettingsTab('general')">Общие</button>
                 <button class="settings-tab" onclick="setSettingsTab('models')">Модели</button>
                 <button class="settings-tab" onclick="setSettingsTab('prompts')">Промты</button>
                 <button class="settings-tab" onclick="setSettingsTab('templates')">Шаблоны</button>
+                <button class="settings-tab" onclick="setSettingsTab('lmstudio')">Провайдеры</button>
+                <button class="settings-tab" onclick="setSettingsTab('logs')" id="settings-tab-logs">Логи<span id="log-error-badge" class="log-count-badge hidden">0</span></button>
             </div>
 
             <!-- General Tab -->
@@ -1546,6 +1789,239 @@
                 </div>
             </div>
 
+            <!-- Провайдеры Tab -->
+            <div id="settings-lmstudio" class="tab-pane">
+                <div class="modal-body space-y-4">
+
+                    <!-- Enable toggle -->
+                    <div class="card" style="margin:0; padding:1.25rem;">
+                        <label class="flex items-start gap-3 cursor-pointer">
+                            <input type="checkbox" id="lmsEnabledToggle" class="mt-1" onchange="onLmsToggleChange()">
+                            <div>
+                                <div class="text-sm font-medium">Подключить провайдера для автоматической обработки</div>
+                                <p class="text-xs text-zinc-500 mt-1">Кнопка «Отправить в ИИ» появится на шагах синтеза и улучшения промта. Если выключено — всё остаётся в ручном режиме.</p>
+                            </div>
+                        </label>
+                    </div>
+
+                    <div id="lms-config-section" class="space-y-4">
+
+                        <!-- Provider selector -->
+                        <div class="card" style="margin:0; padding:1.25rem;">
+                            <label class="block text-sm font-medium mb-3">Провайдер</label>
+
+                            <div class="text-xs font-semibold uppercase tracking-wider mb-2" style="color:var(--text-muted);">🖥️ Локальные</div>
+                            <div class="grid gap-2 mb-4" style="grid-template-columns: repeat(3,1fr);">
+                                <label id="lms-provider-card-lmstudio" class="lms-provider-card cursor-pointer rounded-lg border-2 p-3 text-center transition-all" onclick="selectLmsProvider('lmstudio')">
+                                    <div class="text-lg mb-1">🖥️</div>
+                                    <div class="text-xs font-semibold">LM Studio</div>
+                                    <div class="text-xs text-zinc-400 mt-0.5">порт 1234</div>
+                                </label>
+                                <label id="lms-provider-card-ollama" class="lms-provider-card cursor-pointer rounded-lg border-2 p-3 text-center transition-all" onclick="selectLmsProvider('ollama')">
+                                    <div class="text-lg mb-1">🦙</div>
+                                    <div class="text-xs font-semibold">Ollama</div>
+                                    <div class="text-xs text-zinc-400 mt-0.5">порт 11434</div>
+                                </label>
+                                <label id="lms-provider-card-custom" class="lms-provider-card cursor-pointer rounded-lg border-2 p-3 text-center transition-all" onclick="selectLmsProvider('custom')">
+                                    <div class="text-lg mb-1">⚙️</div>
+                                    <div class="text-xs font-semibold">Другой</div>
+                                    <div class="text-xs text-zinc-400 mt-0.5">OpenAI API</div>
+                                </label>
+                            </div>
+
+                            <div class="text-xs font-semibold uppercase tracking-wider mb-2" style="color:var(--text-muted);">☁️ Облачные</div>
+                            <div class="grid gap-2" style="grid-template-columns: repeat(3,1fr);">
+                                <label id="lms-provider-card-openai" class="lms-provider-card cursor-pointer rounded-lg border-2 p-3 text-center transition-all" onclick="selectLmsProvider('openai')">
+                                    <div class="text-lg mb-1">🤖</div>
+                                    <div class="text-xs font-semibold">OpenAI</div>
+                                    <div class="text-xs text-zinc-400 mt-0.5">GPT</div>
+                                </label>
+                                <label id="lms-provider-card-deepseek" class="lms-provider-card cursor-pointer rounded-lg border-2 p-3 text-center transition-all" onclick="selectLmsProvider('deepseek')">
+                                    <div class="text-lg mb-1">🔮</div>
+                                    <div class="text-xs font-semibold">DeepSeek</div>
+                                    <div class="text-xs text-zinc-400 mt-0.5">V3.2</div>
+                                </label>
+                                <label id="lms-provider-card-mistral" class="lms-provider-card cursor-pointer rounded-lg border-2 p-3 text-center transition-all" onclick="selectLmsProvider('mistral')">
+                                    <div class="text-lg mb-1">🌀</div>
+                                    <div class="text-xs font-semibold">Mistral AI</div>
+                                    <div class="text-xs text-zinc-400 mt-0.5">Large 3</div>
+                                </label>
+                                <label id="lms-provider-card-anthropic" class="lms-provider-card cursor-pointer rounded-lg border-2 p-3 text-center transition-all" onclick="selectLmsProvider('anthropic')">
+                                    <div class="text-lg mb-1">🧠</div>
+                                    <div class="text-xs font-semibold">Anthropic</div>
+                                    <div class="text-xs text-zinc-400 mt-0.5">Claude</div>
+                                </label>
+                                <label id="lms-provider-card-google" class="lms-provider-card cursor-pointer rounded-lg border-2 p-3 text-center transition-all" onclick="selectLmsProvider('google')">
+                                    <div class="text-lg mb-1">🌟</div>
+                                    <div class="text-xs font-semibold">Google</div>
+                                    <div class="text-xs text-zinc-400 mt-0.5">Gemini</div>
+                                </label>
+                                <label id="lms-provider-card-groq" class="lms-provider-card cursor-pointer rounded-lg border-2 p-3 text-center transition-all" onclick="selectLmsProvider('groq')">
+                                    <div class="text-lg mb-1">⚡</div>
+                                    <div class="text-xs font-semibold">Groq Cloud</div>
+                                    <div class="text-xs text-zinc-400 mt-0.5">LPU</div>
+                                </label>
+                                <label id="lms-provider-card-huggingface" class="lms-provider-card cursor-pointer rounded-lg border-2 p-3 text-center transition-all" onclick="selectLmsProvider('huggingface')">
+                                    <div class="text-lg mb-1">🤗</div>
+                                    <div class="text-xs font-semibold">Hugging Face</div>
+                                    <div class="text-xs text-zinc-400 mt-0.5">Inference API</div>
+                                </label>
+                            </div>
+
+                            <input type="hidden" id="lmsProviderInput" value="lmstudio">
+                            <p id="lms-provider-hint" class="text-xs text-zinc-500 mt-3"></p>
+                        </div>
+
+                        <!-- API Key (cloud only) -->
+                        <div class="card" id="lms-apikey-card" style="margin:0; padding:1.25rem; display:none;">
+                            <label class="block text-sm font-medium mb-2" id="lms-apikey-label">API ключ</label>
+                            <div class="relative">
+                                <input type="password" id="lmsApiKeyInput" class="input pr-10" placeholder="sk-…">
+                                <button type="button" onclick="toggleApiKeyVisibility()" class="absolute right-2 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-zinc-600 p-1" title="Показать/скрыть">
+                                    <svg id="eye-icon-closed" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21"/></svg>
+                                    <svg id="eye-icon-open" class="w-4 h-4 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+                                </button>
+                            </div>
+                            <p class="text-xs text-zinc-500 mt-1.5" id="lms-apikey-hint">Ключ хранится только в браузере.</p>
+                        </div>
+
+                        <!-- Server URL (local / custom only) -->
+                        <div class="card" id="lms-url-card" style="margin:0; padding:1.25rem;">
+                            <div class="flex items-center justify-between mb-2 flex-wrap gap-2">
+                                <label class="block text-sm font-medium" id="lms-url-label">Адрес сервера</label>
+                                <span id="lms-connection-status" class="lms-status disconnected">
+                                    <span class="lms-status-dot"></span>
+                                    <span id="lms-status-text">Не подключено</span>
+                                </span>
+                            </div>
+                            <div class="flex gap-2">
+                                <input type="text" id="lmsUrlInput" class="input flex-1" placeholder="http://localhost:1234">
+                                <button class="btn btn-outline btn-sm" onclick="testLmsConnection()" id="lms-test-btn">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+                                    Проверить
+                                </button>
+                            </div>
+                            <p id="lms-server-hint" class="text-xs text-zinc-500 mt-2"></p>
+                        </div>
+
+                        <!-- Cloud connect button (cloud providers) -->
+                        <div class="card" id="lms-cloud-check-card" style="margin:0; padding:1.25rem; display:none;">
+                            <div class="flex items-center justify-between flex-wrap gap-2">
+                                <span id="lms-connection-status-cloud" class="lms-status disconnected">
+                                    <span class="lms-status-dot"></span>
+                                    <span id="lms-status-text-cloud">Не проверено</span>
+                                </span>
+                                <button class="btn btn-outline btn-sm" onclick="testLmsConnection()" id="lms-test-cloud-btn">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+                                    Проверить ключ
+                                </button>
+                            </div>
+                            <p class="text-xs text-zinc-500 mt-2" id="lms-cloud-hint">Введите API ключ и нажмите «Проверить ключ» для загрузки списка моделей.</p>
+                        </div>
+
+                        <!-- Model selection (dropdown for list providers) -->
+                        <div class="card" id="lms-model-select-card" style="margin:0; padding:1.25rem;">
+                            <div class="flex items-center justify-between mb-2 flex-wrap gap-2">
+                                <label class="block text-sm font-medium">Модель</label>
+                                <button class="btn btn-outline btn-sm text-xs" onclick="refreshLmsModels()" id="lms-refresh-btn">
+                                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                                    Обновить
+                                </button>
+                            </div>
+                            <select id="lmsModelSelect" class="input">
+                                <option value="">— Выберите провайдера и проверьте подключение —</option>
+                            </select>
+                            <p id="lms-model-hint" class="text-xs text-zinc-500 mt-2">Выберите модель из списка.</p>
+                        </div>
+
+                        <!-- Model input (manual for providers like Hugging Face) -->
+                        <div class="card" id="lms-model-manual-card" style="margin:0; padding:1.25rem; display:none;">
+                            <label class="block text-sm font-medium mb-2">Модель</label>
+                            <input type="text" id="lmsModelManualInput" class="input" placeholder="meta-llama/Llama-3.3-70B-Instruct">
+                            <p id="lms-model-manual-hint" class="text-xs text-zinc-500 mt-2">Укажите ID модели вручную.</p>
+                        </div>
+
+                        <!-- Usage mode -->
+                        <div class="card" style="margin:0; padding:1.25rem;">
+                            <label class="block text-sm font-medium mb-3">Использовать для</label>
+                            <div class="space-y-2.5">
+                                <label class="flex items-center gap-2.5 cursor-pointer">
+                                    <input type="radio" name="lmsUseFor" value="both" id="lmsUseBoth" class="accent-indigo-500">
+                                    <div><div class="text-sm font-medium">Всего сразу</div><div class="text-xs text-zinc-500">Улучшение промта + синтез ответов</div></div>
+                                </label>
+                                <label class="flex items-center gap-2.5 cursor-pointer">
+                                    <input type="radio" name="lmsUseFor" value="prompt" id="lmsUsePrompt" class="accent-indigo-500">
+                                    <div><div class="text-sm font-medium">Только улучшение промта</div><div class="text-xs text-zinc-500">Шаг 2: уточнение вашего запроса</div></div>
+                                </label>
+                                <label class="flex items-center gap-2.5 cursor-pointer">
+                                    <input type="radio" name="lmsUseFor" value="synthesis" id="lmsUseSynthesis" class="accent-indigo-500">
+                                    <div><div class="text-sm font-medium">Только синтез ответов</div><div class="text-xs text-zinc-500">Шаг 4: агрегация ответов всех моделей</div></div>
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- API docs link — general, visible for all providers -->
+                        <div class="card" style="margin:0; padding:1.25rem; background: rgba(59,130,246,0.04); border-color: rgba(59,130,246,0.2);">
+                            <div class="flex items-start gap-2">
+                                <span class="text-lg">📡</span>
+                                <div>
+                                    <div class="text-sm font-medium" style="color:var(--accent, #3b82f6);">Документация API</div>
+                                    <p class="text-xs text-zinc-500 mt-1">Все провайдеры используют формат, совместимый с OpenAI API. Подробности по эндпоинтам, параметрам, стримингу и rate limits — в документации.</p>
+                                    <a href="api-docs.html" target="_blank" class="text-xs text-blue-500 hover:underline mt-1 inline-block">Открыть документацию API →</a>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+
+            <!-- Logs Tab -->
+            <div id="settings-logs" class="tab-pane">
+                <div class="modal-body space-y-4">
+                    <div class="card" style="margin:0; padding:1.25rem;">
+                        <div class="flex items-center justify-between flex-wrap gap-3 mb-3">
+                            <label class="flex items-center gap-2.5 cursor-pointer">
+                                <input type="checkbox" id="loggingEnabledToggle" onchange="onLoggingToggleChange()">
+                                <div>
+                                    <div class="text-sm font-medium">Сохранять логи</div>
+                                    <p class="text-xs text-zinc-500 mt-0.5">При отключении новые записи не сохраняются.</p>
+                                </div>
+                            </label>
+                            <div class="flex gap-2">
+                                <button class="btn btn-outline btn-sm text-xs" onclick="exportLogs()">
+                                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                                    Экспорт
+                                </button>
+                                <button class="btn btn-danger btn-sm text-xs" onclick="clearLogs()">
+                                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                                    Очистить логи
+                                </button>
+                            </div>
+                        </div>
+                        <div class="flex gap-3 text-xs text-zinc-500 flex-wrap" id="log-stats">
+                            <span>Всего: <strong id="log-stat-total">0</strong></span>
+                            <span style="color:#ef4444;">Ошибок: <strong id="log-stat-errors">0</strong></span>
+                            <span style="color:#d97706;">Предупреждений: <strong id="log-stat-warns">0</strong></span>
+                        </div>
+                    </div>
+                    <div class="flex gap-2 flex-wrap">
+                        <button class="btn btn-outline btn-sm text-xs log-filter-btn active" data-filter="all" onclick="setLogFilter('all', this)">Все</button>
+                        <button class="btn btn-outline btn-sm text-xs log-filter-btn" data-filter="error" onclick="setLogFilter('error', this)">Ошибки</button>
+                        <button class="btn btn-outline btn-sm text-xs log-filter-btn" data-filter="warn" onclick="setLogFilter('warn', this)">Предупреждения</button>
+                        <button class="btn btn-outline btn-sm text-xs log-filter-btn" data-filter="info" onclick="setLogFilter('info', this)">Инфо</button>
+                        <button class="btn btn-outline btn-sm text-xs log-filter-btn" data-filter="success" onclick="setLogFilter('success', this)">Успех</button>
+                    </div>
+                    <div class="logs-container" id="logsContainer">
+                        <div class="logs-empty" id="logsEmpty">
+                            <svg class="w-8 h-8 mx-auto mb-2 text-zinc-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                            <p>Логи пусты</p>
+                        </div>
+                        <div id="logsList"></div>
+                    </div>
+                </div>
+            </div>
+
             <div class="modal-footer">
                 <button onclick="closeSettings()" class="btn btn-outline">Закрыть</button>
                 <button onclick="saveSettings()" class="btn btn-primary">Сохранить</button>
@@ -1639,15 +2115,37 @@
 
 АЛГОРИТМ РАБОТЫ (выполняй внутренне, не показывай)
 
-1. Глубокий разбор задачи
+1. Определи тип запроса
+
+Определи, что просит пользователь:
+- УЛУЧШЕНИЕ ПРОМТА: «улучши этот промт», «сделай лучше», «оптимизируй», «перепиши» — тогда переформулируй и улучши промт пользователя.
+- СОЗДАНИЕ ПРОМТА: «создай промт», «напиши промт», «сделай промт», «нужен промт для» — тогда создай готовый промт для конкретной задачи.
+- ОБЫЧНЫЙ ЗАПРОС: всё остальное — тогда создай промт для ИИ, который выполнит задачу пользователя.
+
+2. Обработка мета-запросов (создание промтов)
+
+Если пользователь просит создать/написать промт:
+- Определи ДЛЯ КАКОЙ ЗАДАЧИ нужен промт (не для какой модели, а что должен делать ИИ-получатель).
+- Определи ЯЗЫК промта:
+  - Если пользователь указал язык — создай промт на этом языке.
+  - Если не указал — используй язык исходного запроса.
+- Включи в промт:
+  - Роль (какой эксперт выполняет задачу)
+  - Контекст (что важно знать)
+  - Конкретные требования (что должно быть в результате)
+  - Формат ответа (структура, язык, объём)
+  - Ограничения (что исключить)
+  - Все детали из запроса пользователя
+
+3. Глубокий разбор задачи
 - Определи реальную цель (что считается успешным результатом).
 - Выяви контекст, аудиторию и сценарий использования.
 - Определи тип задачи (анализ, генерация, объяснение, код, сравнение и т.д.).
 - Найди неявные требования, которые пользователь мог не сформулировать.
 - Учти типичные ошибки ИИ в подобных задачах.
 
-2. Проектирование структуры промта
-Выбери только необходимые элементы
+4. Проектирование структуры промта
+Выбери только необходимые элементы:
 - Роль (кто ИИ и с каким уровнем экспертизы)
 - Контекст (что важно знать)
 - Цель (конкретный результат)
@@ -1659,7 +2157,7 @@
 
 Не добавляй элементы ради полноты — только если они реально улучшают результат.
 
-3. Оптимизация
+5. Оптимизация
 - Устрани двусмысленности и расплывчатость.
 - Замени абстрактные формулировки на конкретные инструкции.
 - Убедись, что промт не допускает двойной интерпретации.
@@ -1673,7 +2171,7 @@
 - Однозначный: минимизирует риск неправильного понимания.
 - Практичный: сразу применим без доработки.
 - Адаптивный: работает как для простых, так и для сложных входных данных.
-- Чётко задаёт
+- Чётко задаёт:
   - что делать,
   - как делать,
   - в каком формате выдать результат.
@@ -1684,9 +2182,14 @@
 - Выводи ТОЛЬКО готовый промт.
 - Без объяснений, комментариев и мета-текста.
 - Пиши от первого лица (как будто пользователь сам формулирует запрос).
-- Сохраняй язык исходного запроса.
+- Сохраняй язык исходного запроса (для мета-запросов — язык, на котором просили создать промт).
 - Не искажай исходное намерение.
 - Если исходный запрос уже качественный — улучшай минимально, не усложняй.
+
+ЗАПРЕЩЕНО:
+- Писать вступления вроде «Вот улучшенный промт», «Я оптимизировал ваш запрос» и т.п.
+- Писать заключения или пояснения о внесённых изменениях.
+- Упоминать процесс своей работы или методологию.
 
 
 ФИНАЛЬНЫЙ ПРИНЦИП
@@ -1782,6 +2285,14 @@
 ФИНАЛЬНЫЙ ПРИНЦИП
 
 Делай не усреднение ответов, а их интеллектуальный синтез: сохраняй лучшее, отбрасывай слабое, исправляй ошибки и выдавай единый качественный результат.
+
+ЗАПРЕЩЕНО:
+- Писать вступления вроде «Вот синтезированный ответ», «Объединив варианты», «На основе ответов моделей» и т.п.
+- Писать заключения вроде «Я использовал лучшие формулировки», «Я устранил повторы», «Я сохранил структуру» и т.п.
+- Упоминать процесс синтеза, свою роль или методологию работы.
+- Комментировать качество исходных ответов («Вариант 1 был лучше», «Вариант 2 содержал ошибку» и т.п.).
+
+Твой ответ — это готовый текст для пользователя. Не пиши о том, как ты его создавал. Просто дай ответ.
 
 Жди описание задачи от пользователя.`;
 
@@ -2117,6 +2628,1115 @@
             useRatingsInSynthesis: true
         };
 
+        // ═══════════════════════════════════════════════════════════════
+        // LOCAL AI STATE  (LM Studio / Ollama / Custom)
+        // ═══════════════════════════════════════════════════════════════
+        let lmStudioSettings = {
+            enabled:  false,
+            provider: 'lmstudio',   // 'lmstudio'|'ollama'|'custom'|'openai'|'anthropic'|'google'
+            url:      'http://localhost:1234',
+            apiKey:   '',
+            model:    '',
+            useFor:   'both'        // 'prompt'|'synthesis'|'both'
+        };
+
+        // ═══════════════════════════════════════════════════════════════
+        // APP LOGGING SYSTEM
+        // ═══════════════════════════════════════════════════════════════
+        let appLogs = [];
+        let loggingEnabled = true;
+        let logFilter = 'all';
+        const MAX_LOGS = 500;
+
+        function appLog(level, message, details = null) {
+            if (!loggingEnabled) return;
+            const entry = {
+                id: Date.now() + Math.random(),
+                time: new Date().toISOString(),
+                level,      // 'info' | 'warn' | 'error' | 'success'
+                message,
+                details
+            };
+            appLogs.unshift(entry);     // newest first
+            if (appLogs.length > MAX_LOGS) appLogs.length = MAX_LOGS;
+            saveLogs();
+            updateLogBadge();
+            // Refresh logs view if tab is open
+            if (settingsTab === 'logs') renderLogs();
+        }
+
+        function saveLogs() {
+            try {
+                localStorage.setItem('multillm_logs', JSON.stringify(appLogs.slice(0, MAX_LOGS)));
+            } catch(e) { /* silent */ }
+        }
+
+        function loadLogs() {
+            try {
+                const raw = localStorage.getItem('multillm_logs');
+                if (raw) appLogs = JSON.parse(raw);
+            } catch(e) { appLogs = []; }
+            try {
+                loggingEnabled = localStorage.getItem('multillm_logging_enabled') !== 'false';
+            } catch(e) { loggingEnabled = true; }
+        }
+
+        function clearLogs() {
+            appLogs = [];
+            saveLogs();
+            updateLogBadge();
+            renderLogs();
+            updateLogStats();
+        }
+
+        function exportLogs() {
+            const text = appLogs.map(e =>
+                `[${e.time}] [${e.level.toUpperCase()}] ${e.message}${e.details ? '\n  ' + e.details : ''}`
+            ).join('\n');
+            const blob = new Blob([text], { type: 'text/plain' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `multillm-logs-${new Date().toISOString().slice(0,10)}.txt`;
+            a.click();
+            URL.revokeObjectURL(url);
+            appLog('info', 'Логи экспортированы');
+        }
+
+        function setLogFilter(filter, btn) {
+            logFilter = filter;
+            document.querySelectorAll('.log-filter-btn').forEach(b => b.classList.remove('active'));
+            if (btn) btn.classList.add('active');
+            renderLogs();
+        }
+
+        function renderLogs() {
+            const container = document.getElementById('logsList');
+            const emptyEl = document.getElementById('logsEmpty');
+            if (!container) return;
+
+            const filtered = logFilter === 'all' ? appLogs : appLogs.filter(e => e.level === logFilter);
+
+            if (filtered.length === 0) {
+                container.innerHTML = '';
+                if (emptyEl) emptyEl.style.display = '';
+                return;
+            }
+            if (emptyEl) emptyEl.style.display = 'none';
+
+            container.innerHTML = filtered.map(e => {
+                const t = new Date(e.time);
+                const timeStr = t.toLocaleTimeString('ru-RU', { hour12: false }) + '.' + String(t.getMilliseconds()).padStart(3,'0');
+                const dateStr = t.toLocaleDateString('ru-RU', { day:'2-digit', month:'2-digit' });
+                return `<div class="log-entry">
+                    <span class="log-time">${dateStr} ${timeStr}</span>
+                    <span class="log-level ${e.level}">${e.level}</span>
+                    <span class="log-message">${escapeHtml(e.message)}${e.details ? `<div class="log-details">${escapeHtml(String(e.details))}</div>` : ''}</span>
+                </div>`;
+            }).join('');
+            updateLogStats();
+        }
+
+        function updateLogStats() {
+            const total = document.getElementById('log-stat-total');
+            const errors = document.getElementById('log-stat-errors');
+            const warns = document.getElementById('log-stat-warns');
+            if (total) total.textContent = appLogs.length;
+            if (errors) errors.textContent = appLogs.filter(e => e.level === 'error').length;
+            if (warns) warns.textContent = appLogs.filter(e => e.level === 'warn').length;
+        }
+
+        function updateLogBadge() {
+            const errorCount = appLogs.filter(e => e.level === 'error').length;
+            const badge = document.getElementById('log-error-badge');
+            if (!badge) return;
+            if (errorCount > 0) {
+                badge.textContent = errorCount > 99 ? '99+' : errorCount;
+                badge.classList.remove('hidden');
+            } else {
+                badge.classList.add('hidden');
+            }
+        }
+
+        function onLoggingToggleChange() {
+            const checked = document.getElementById('loggingEnabledToggle').checked;
+            loggingEnabled = checked;
+            localStorage.setItem('multillm_logging_enabled', String(checked));
+        }
+
+        // ═══════════════════════════════════════════════════════════════
+        // PROVIDERS CONFIG  (local + cloud)
+        // ═══════════════════════════════════════════════════════════════
+        const LMS_PROVIDERS = {
+            // ── Local ──────────────────────────────────────────────────
+            lmstudio: {
+                label:      'LM Studio',
+                isCloud:    false,
+                defaultUrl: 'http://localhost:1234',
+                hint:       'Откройте LM Studio → Local Server → Start Server. Включите режим совместимости с OpenAI API.',
+                modelsApi:  'openai',
+                chatApi:    'openai',
+                models:     null,
+            },
+            ollama: {
+                label:      'Ollama',
+                isCloud:    false,
+                defaultUrl: 'http://localhost:11434',
+                hint:       'Запустите Ollama: <code>ollama serve</code>. Загрузите модель: <code>ollama pull &lt;model&gt;</code>.',
+                modelsApi:  'ollama',
+                chatApi:    'openai',
+                models:     null,
+            },
+            custom: {
+                label:      'Другой (OpenAI API)',
+                isCloud:    false,
+                defaultUrl: 'http://localhost:8080',
+                hint:       'Любой OpenAI-совместимый сервер: LiteLLM, llama.cpp, Jan, text-generation-webui и др.',
+                modelsApi:  'openai',
+                chatApi:    'openai',
+                models:     null,
+            },
+            // ── Cloud ──────────────────────────────────────────────────
+            openai: {
+                label:       'OpenAI',
+                isCloud:     true,
+                defaultUrl:  'https://api.openai.com',
+                hint:        'Получите ключ на <a href="https://platform.openai.com/api-keys" target="_blank" class="text-blue-500 hover:underline">platform.openai.com</a>.',
+                apikeyHint:  'Ключ начинается с <code>sk-…</code>',
+                apikeyLabel: 'OpenAI API ключ',
+                modelsApi:   'hardcoded',
+                chatApi:     'openai',
+                models:      [
+                    'gpt-5.4',
+                    'gpt-5.4-pro',
+                    'gpt-5.4-mini',
+                    'gpt-5.4-nano',
+                    'gpt-5-mini',
+                    'gpt-5-nano',
+                    'gpt-5',
+                    'gpt-4.1',
+                ],
+            },
+            deepseek: {
+                label:       'DeepSeek',
+                isCloud:     true,
+                defaultUrl:  'https://api.deepseek.com',
+                hint:        'Получите ключ на <a href="https://platform.deepseek.com" target="_blank" class="text-blue-500 hover:underline">platform.deepseek.com</a>.',
+                apikeyHint:  'API ключ DeepSeek',
+                apikeyLabel: 'DeepSeek API ключ',
+                modelsApi:   'openai',
+                chatApi:     'openai',
+                models:      null,
+            },
+            anthropic: {
+                label:       'Anthropic',
+                isCloud:     true,
+                defaultUrl:  'https://api.anthropic.com',
+                hint:        'Получите ключ на <a href="https://console.anthropic.com" target="_blank" class="text-blue-500 hover:underline">console.anthropic.com</a>.',
+                apikeyHint:  'Ключ начинается с <code>sk-ant-…</code>',
+                apikeyLabel: 'Anthropic API ключ',
+                modelsApi:   'hardcoded',
+                chatApi:     'anthropic',
+                models:      [
+                    'claude-opus-4-6',
+                    'claude-sonnet-4-5',
+                    'claude-haiku-4-5',
+                    'claude-opus-4-5',
+                    'claude-opus-4-1',
+                    'claude-sonnet-4',
+                    'claude-sonnet-3-7',
+                    'claude-opus-4',
+                    'claude-haiku-3',
+                ],
+            },
+            mistral: {
+                label:       'Mistral AI',
+                isCloud:     true,
+                defaultUrl:  'https://api.mistral.ai',
+                hint:        'Получите ключ на <a href="https://console.mistral.ai" target="_blank" class="text-blue-500 hover:underline">console.mistral.ai</a>.',
+                apikeyHint:  'API ключ Mistral',
+                apikeyLabel: 'Mistral API ключ',
+                modelsApi:   'openai',
+                chatApi:     'openai',
+                models:      null,
+            },
+            huggingface: {
+                label:       'Hugging Face',
+                isCloud:     true,
+                defaultUrl:  'https://router.huggingface.co/hf-inference/models',
+                hint:        'Получите ключ на <a href="https://huggingface.co/settings/tokens" target="_blank" class="text-blue-500 hover:underline">huggingface.co</a>. Укажите модель вручную, например: meta-llama/Llama-3.3-70B-Instruct',
+                apikeyHint:  'Ключ HF (hf_…)',
+                apikeyLabel: 'Hugging Face API ключ',
+                modelsApi:   'manual',
+                chatApi:     'openai',
+                models:      null,
+                manualModel: true,
+            },
+            google: {
+                label:       'Google (Gemini)',
+                isCloud:     true,
+                defaultUrl:  'https://generativelanguage.googleapis.com/v1beta/openai',
+                hint:        'Получите ключ на <a href="https://aistudio.google.com/apikey" target="_blank" class="text-blue-500 hover:underline">aistudio.google.com</a>.',
+                apikeyHint:  'Google AI Studio API ключ',
+                apikeyLabel: 'Google API ключ',
+                modelsApi:   'hardcoded',
+                chatApi:     'openai',
+                models:      [
+                    'gemini-2.5-pro',
+                    'gemini-2.5-flash',
+                    'gemini-2.5-flash-lite',
+                    'gemini-2.0-flash',
+                    'gemini-2.0-flash-lite',
+                ],
+            },
+            groq: {
+                label:       'Groq Cloud',
+                isCloud:     true,
+                defaultUrl:  'https://api.groq.com/openai',
+                hint:        'Получите ключ на <a href="https://console.groq.com/keys" target="_blank" class="text-blue-500 hover:underline">console.groq.com/keys</a>.',
+                apikeyHint:  'Ключ начинается с <code>gsk_…</code>',
+                apikeyLabel: 'Groq API ключ',
+                modelsApi:   'hardcoded',
+                chatApi:     'openai',
+                models:      [
+                    'llama-3.1-8b-instant',
+                    'llama-3.3-70b-versatile',
+                    'meta-llama/llama-4-scout-17b-16e-instruct',
+                    'groq/compound',
+                    'groq/compound-mini',
+                    'qwen/qwen3-32b',
+                    'openai/gpt-oss-120b',
+                    'openai/gpt-oss-20b',
+                    'openai/gpt-oss-safeguard-20b',
+                    'whisper-large-v3',
+                    'whisper-large-v3-turbo',
+                ],
+            },
+        };
+
+        function getProviderInfo(provider) {
+            return LMS_PROVIDERS[provider] || LMS_PROVIDERS.lmstudio;
+        }
+
+        function isCloudProvider(provider) {
+            return !!(getProviderInfo(provider).isCloud);
+        }
+
+        function toggleApiKeyVisibility() {
+            const input = document.getElementById('lmsApiKeyInput');
+            const iconClosed = document.getElementById('eye-icon-closed');
+            const iconOpen   = document.getElementById('eye-icon-open');
+            if (!input) return;
+            if (input.type === 'password') {
+                input.type = 'text';
+                iconClosed?.classList.add('hidden');
+                iconOpen?.classList.remove('hidden');
+            } else {
+                input.type = 'password';
+                iconClosed?.classList.remove('hidden');
+                iconOpen?.classList.add('hidden');
+            }
+        }
+
+        function updateLmsLayoutForProvider(provider) {
+            const info    = getProviderInfo(provider);
+            const isCloud = info.isCloud;
+            const isManual = info.manualModel;
+
+            // Show/hide API key card
+            const apiKeyCard = document.getElementById('lms-apikey-card');
+            if (apiKeyCard) apiKeyCard.style.display = isCloud ? '' : 'none';
+
+            // Show/hide URL card
+            const urlCard = document.getElementById('lms-url-card');
+            if (urlCard) urlCard.style.display = (isCloud && !isManual) ? 'none' : '';
+
+            // Show/hide cloud check card
+            const cloudCard = document.getElementById('lms-cloud-check-card');
+            if (cloudCard) cloudCard.style.display = (isCloud && !isManual) ? '' : 'none';
+
+            // Show/hide model select vs manual input
+            const selectCard = document.getElementById('lms-model-select-card');
+            const manualCard = document.getElementById('lms-model-manual-card');
+            if (selectCard) selectCard.style.display = isManual ? 'none' : '';
+            if (manualCard) manualCard.style.display = isManual ? '' : 'none';
+
+            // Update manual model hints
+            if (isManual) {
+                const manualHint = document.getElementById('lms-model-manual-hint');
+                if (manualHint) manualHint.innerHTML = info.hint || 'Укажите ID модели вручную.';
+                // Restore saved manual model
+                const manualInput = document.getElementById('lmsModelManualInput');
+                if (manualInput && lmStudioSettings.model) manualInput.value = lmStudioSettings.model;
+            }
+
+            // Update API key labels/hints
+            if (isCloud) {
+                const lbl = document.getElementById('lms-apikey-label');
+                const hint = document.getElementById('lms-apikey-hint');
+                if (lbl) lbl.textContent = info.apikeyLabel || 'API ключ';
+                if (hint) hint.innerHTML = (info.apikeyHint || '') + ' · Ключ хранится только в вашем браузере.';
+            }
+
+            // Update model hint
+            const modelHint = document.getElementById('lms-model-hint');
+            if (modelHint && !isManual) {
+                if (info.modelsApi === 'hardcoded') {
+                    modelHint.textContent = `Список моделей ${info.label} (актуальные на момент обновления приложения).`;
+                } else {
+                    modelHint.textContent = 'Список загружается при проверке подключения.';
+                }
+            }
+        }
+
+        function selectLmsProvider(provider) {
+            const input = document.getElementById('lmsProviderInput');
+            if (input) input.value = provider;
+
+            // Update card highlights
+            Object.keys(LMS_PROVIDERS).forEach(p => {
+                const card = document.getElementById(`lms-provider-card-${p}`);
+                if (card) card.classList.toggle('selected', p === provider);
+            });
+
+            const info = getProviderInfo(provider);
+
+            // Update URL field
+            const urlInput = document.getElementById('lmsUrlInput');
+            if (urlInput) {
+                if (!info.isCloud) {
+                    // Only auto-fill if field is empty or had another provider's default
+                    const allDefaults = Object.values(LMS_PROVIDERS).map(p => p.defaultUrl);
+                    if (!urlInput.value || allDefaults.includes(urlInput.value)) {
+                        urlInput.value = info.defaultUrl;
+                    }
+                    urlInput.placeholder = info.defaultUrl;
+                }
+            }
+
+            // Update hints
+            const serverHint = document.getElementById('lms-server-hint');
+            if (serverHint) serverHint.innerHTML = info.isCloud ? '' : (info.hint || '');
+
+            const providerHint = document.getElementById('lms-provider-hint');
+            if (providerHint) {
+                const icons = { lmstudio:'🖥️', ollama:'🦙', custom:'⚙️', openai:'🤖', deepseek:'🔮', anthropic:'🧠', google:'🌟', groq:'⚡', mistral:'🌀', huggingface:'🤗' };
+                providerHint.innerHTML = `${icons[provider]||'⚙️'} <strong>${info.label}</strong> выбран${info.isCloud ? ` · <span style="color:var(--text-muted)">требуется API ключ</span>` : ''}`;
+            }
+
+            // Update cloud hint
+            const cloudHint = document.getElementById('lms-cloud-hint');
+            if (cloudHint && info.isCloud) cloudHint.innerHTML = info.hint || '';
+
+            // Show/hide layout panels
+            updateLmsLayoutForProvider(provider);
+
+            // Reset connection status
+            setLmsConnectionStatus('disconnected', 'Не проверено');
+            setLmsCloudStatus('disconnected', 'Не проверено');
+
+            // For hardcoded-model providers, pre-populate list immediately
+            if (info.modelsApi === 'hardcoded' && info.models) {
+                populateLmsModelSelect(info.models);
+            } else {
+                const modelSelect = document.getElementById('lmsModelSelect');
+                if (modelSelect) modelSelect.innerHTML = '<option value="">— Проверьте подключение —</option>';
+            }
+        }
+
+        function loadLmsSettings() {
+            try {
+                const raw = localStorage.getItem('multillm_lmstudio');
+                if (raw) lmStudioSettings = { ...lmStudioSettings, ...JSON.parse(raw) };
+                if (!lmStudioSettings.provider) lmStudioSettings.provider = 'lmstudio';
+            } catch(e) { appLog('error', 'Ошибка загрузки настроек провайдера', e.message); }
+        }
+
+        function saveLmsSettings() {
+            try {
+                localStorage.setItem('multillm_lmstudio', JSON.stringify(lmStudioSettings));
+            } catch(e) { appLog('error', 'Ошибка сохранения настроек провайдера', e.message); }
+        }
+
+        function onLmsToggleChange() {
+            const enabled = document.getElementById('lmsEnabledToggle').checked;
+            const section = document.getElementById('lms-config-section');
+            if (section) section.style.opacity = enabled ? '1' : '0.5';
+        }
+
+        function populateLmsSettingsUI() {
+            const enabledToggle = document.getElementById('lmsEnabledToggle');
+            const urlInput      = document.getElementById('lmsUrlInput');
+            const apiKeyInput   = document.getElementById('lmsApiKeyInput');
+            const modelSelect   = document.getElementById('lmsModelSelect');
+            const section       = document.getElementById('lms-config-section');
+            const providerInp   = document.getElementById('lmsProviderInput');
+
+            if (enabledToggle) enabledToggle.checked = lmStudioSettings.enabled;
+            if (section) section.style.opacity = lmStudioSettings.enabled ? '1' : '0.5';
+
+            const provider = lmStudioSettings.provider || 'lmstudio';
+            if (providerInp) providerInp.value = provider;
+
+            // Highlight card
+            Object.keys(LMS_PROVIDERS).forEach(p => {
+                const card = document.getElementById(`lms-provider-card-${p}`);
+                if (card) card.classList.toggle('selected', p === provider);
+            });
+
+            const info = getProviderInfo(provider);
+
+            // URL
+            if (urlInput) {
+                urlInput.value       = lmStudioSettings.url || info.defaultUrl;
+                urlInput.placeholder = info.defaultUrl;
+            }
+
+            // API Key
+            if (apiKeyInput) apiKeyInput.value = lmStudioSettings.apiKey || '';
+
+            // Hints
+            const serverHint = document.getElementById('lms-server-hint');
+            if (serverHint) serverHint.innerHTML = info.isCloud ? '' : (info.hint || '');
+
+            const cloudHint = document.getElementById('lms-cloud-hint');
+            if (cloudHint && info.isCloud) cloudHint.innerHTML = info.hint || '';
+
+            const providerHint = document.getElementById('lms-provider-hint');
+            if (providerHint) {
+                const icons = { lmstudio:'🖥️', ollama:'🦙', custom:'⚙️', openai:'🤖', anthropic:'🧠', google:'🌟' };
+                providerHint.innerHTML = `${icons[provider]||'⚙️'} <strong>${info.label}</strong> выбран${info.isCloud ? ` · <span style="color:var(--text-muted)">требуется API ключ</span>` : ''}`;
+            }
+
+            // Layout
+            updateLmsLayoutForProvider(provider);
+
+            // Usage radio
+            const radio = document.querySelector(`input[name="lmsUseFor"][value="${lmStudioSettings.useFor || 'both'}"]`);
+            if (radio) radio.checked = true;
+
+            // Populate models
+            if (info.modelsApi === 'hardcoded' && info.models) {
+                populateLmsModelSelect(info.models);
+                if (lmStudioSettings.model && modelSelect) {
+                    const opt = modelSelect.querySelector(`option[value="${lmStudioSettings.model}"]`);
+                    if (opt) modelSelect.value = lmStudioSettings.model;
+                }
+            } else if (lmStudioSettings.model && modelSelect) {
+                // Add saved model as option so it shows even before refresh
+                modelSelect.innerHTML = `<option value="${escapeHtml(lmStudioSettings.model)}" selected>${escapeHtml(lmStudioSettings.model)}</option><option value="">— Обновить список —</option>`;
+            }
+        }
+
+        function setLmsConnectionStatus(status, text) {
+            // Local status indicator (inside url card)
+            const el     = document.getElementById('lms-connection-status');
+            const textEl = document.getElementById('lms-status-text');
+            if (el) el.className = `lms-status ${status}`;
+            if (textEl) textEl.textContent = text;
+        }
+
+        function setLmsCloudStatus(status, text) {
+            // Cloud status indicator
+            const el     = document.getElementById('lms-connection-status-cloud');
+            const textEl = document.getElementById('lms-status-text-cloud');
+            if (el) el.className = `lms-status ${status}`;
+            if (textEl) textEl.textContent = text;
+        }
+
+        function setAnyLmsStatus(status, text) {
+            const provider = document.getElementById('lmsProviderInput')?.value || lmStudioSettings.provider;
+            if (isCloudProvider(provider)) {
+                setLmsCloudStatus(status, text);
+            } else {
+                setLmsConnectionStatus(status, text);
+            }
+        }
+
+        // ── Fetch model list — handles all API types ──────────────────
+        async function fetchLmsModelList(url, provider, apiKey) {
+            const info = getProviderInfo(provider);
+
+            // Hardcoded lists (Anthropic, Google)
+            if (info.modelsApi === 'hardcoded') {
+                if (!apiKey) throw new Error('Введите API ключ');
+                // Quick auth test via a minimal chat request
+                await testCloudAuth(url, provider, apiKey);
+                return info.models || [];
+            }
+
+            // Ollama native /api/tags
+            if (info.modelsApi === 'ollama') {
+                try {
+                    const resp = await fetchWithTimeout(`${url}/api/tags`, { method: 'GET' }, 6000);
+                    if (resp.ok) {
+                        const data = await resp.json();
+                        return (data.models || []).map(m => m.name || m.model).filter(Boolean);
+                    }
+                } catch(_) { /* fall through */ }
+            }
+
+            // OpenAI /v1/models
+            const headers = { 'Content-Type': 'application/json' };
+            if (apiKey) headers['Authorization'] = `Bearer ${apiKey}`;
+
+            const resp = await fetchWithTimeout(`${url}/v1/models`, { method: 'GET', headers }, 8000);
+            if (!resp.ok) {
+                const txt = await resp.text().catch(() => '');
+                throw new Error(`HTTP ${resp.status}${txt ? ': ' + txt.slice(0,120) : ''}`);
+            }
+            const data = await resp.json();
+            const allModels = (data.data || []).map(m => m.id).filter(Boolean);
+            // For OpenAI: filter to useful chat models, keep order
+            if (provider === 'openai') {
+                const preferred = allModels.filter(m =>
+                    m.startsWith('gpt-') || m.startsWith('o1') || m.startsWith('o3') || m.startsWith('chatgpt')
+                );
+                return preferred.length ? preferred : allModels;
+            }
+            return allModels;
+        }
+
+        // Quick auth test for providers with hardcoded model lists
+        async function testCloudAuth(url, provider, apiKey) {
+            const info = getProviderInfo(provider);
+            if (info.chatApi === 'anthropic') {
+                const resp = await fetchWithTimeout(`${url}/v1/messages`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type':    'application/json',
+                        'x-api-key':       apiKey,
+                        'anthropic-version': '2023-06-01',
+                    },
+                    body: JSON.stringify({
+                        model:      info.models[0],
+                        max_tokens: 1,
+                        messages:   [{ role: 'user', content: 'Hi' }],
+                    })
+                }, 10000);
+                if (resp.status === 401) throw new Error('Неверный API ключ');
+                if (resp.status === 403) throw new Error('Доступ запрещён');
+                // 400/529 etc. are acceptable — key is valid
+                return;
+            }
+            // Google / others — OpenAI compat
+            const resp = await fetchWithTimeout(`${url}/v1/models`, {
+                method: 'GET',
+                headers: { 'Authorization': `Bearer ${apiKey}` },
+            }, 8000);
+            if (resp.status === 401) throw new Error('Неверный API ключ');
+            if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+        }
+
+        async function testLmsConnection() {
+            const urlInput    = document.getElementById('lmsUrlInput');
+            const providerInp = document.getElementById('lmsProviderInput');
+            const apiKeyInp   = document.getElementById('lmsApiKeyInput');
+            const provider    = providerInp?.value || lmStudioSettings.provider || 'lmstudio';
+            const info        = getProviderInfo(provider);
+            const url         = info.isCloud ? info.defaultUrl : (urlInput?.value || lmStudioSettings.url).trim().replace(/\/+$/, '');
+            const apiKey      = apiKeyInp?.value?.trim() || lmStudioSettings.apiKey || '';
+            const isManual    = info.manualModel;
+
+            const btnId = info.isCloud ? 'lms-test-cloud-btn' : 'lms-test-btn';
+            const btn   = document.getElementById(btnId);
+
+            setAnyLmsStatus('checking', 'Проверка…');
+            if (btn) btn.disabled = true;
+            appLog('info', `Проверка подключения → ${info.label}${url ? ' (' + url + ')' : ''}`);
+
+            // For manual model providers, just check if API key exists
+            if (isManual) {
+                if (!apiKey) {
+                    setAnyLmsStatus('error', 'Введите API ключ');
+                    appLog('warn', `Проверка ${info.label}: API ключ не указан`);
+                    showSystemNotification(`Введите API ключ для ${info.label}`, 'warning', 3000);
+                    if (btn) btn.disabled = false;
+                    return [];
+                }
+                // Read model from manual input
+                const manualInput = document.getElementById('lmsModelManualInput');
+                const manualModel = manualInput?.value?.trim() || lmStudioSettings.model || '';
+                if (manualModel) {
+                    lmStudioSettings.model = manualModel;
+                }
+                setAnyLmsStatus('connected', `Ключ валидный${manualModel ? ' · ' + manualModel : ''}`);
+                appLog('success', `${info.label} — API ключ указан${manualModel ? ', модель: ' + manualModel : ''}`);
+                showSystemNotification(`${info.label} настроен ✓`, 'saved', 2500);
+                if (btn) btn.disabled = false;
+                return manualModel ? [manualModel] : [];
+            }
+
+            try {
+                const modelList = await fetchLmsModelList(url, provider, apiKey);
+                const count = modelList.length;
+                setAnyLmsStatus('connected', `Подключено · ${count} мод.`);
+                populateLmsModelSelect(modelList);
+                appLog('success', `${info.label} — OK. Моделей: ${count}`, modelList.slice(0,10).join(', '));
+                showSystemNotification(`${info.label} подключён ✓`, 'saved', 2500);
+                return modelList;
+            } catch(e) {
+                setAnyLmsStatus('error', 'Ошибка');
+                appLog('error', `Не удалось подключиться к ${info.label}`, e.message);
+                showSystemNotification(`${info.label}: ${e.message.slice(0, 60)}`, 'error', 4000);
+                return [];
+            } finally {
+                if (btn) btn.disabled = false;
+            }
+        }
+
+        async function refreshLmsModels() {
+            const btn = document.getElementById('lms-refresh-btn');
+            if (btn) { btn.disabled = true; btn.textContent = '…'; }
+            await testLmsConnection();
+            if (btn) {
+                btn.disabled = false;
+                btn.innerHTML = `<svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg> Обновить`;
+            }
+        }
+
+        function populateLmsModelSelect(modelsList) {
+            const select  = document.getElementById('lmsModelSelect');
+            if (!select) return;
+            if (!modelsList || modelsList.length === 0) {
+                select.innerHTML = '<option value="">— Нет доступных моделей —</option>';
+                return;
+            }
+            const current = lmStudioSettings.model;
+            select.innerHTML = modelsList.map(m =>
+                `<option value="${escapeHtml(m)}"${m === current ? ' selected' : ''}>${escapeHtml(m)}</option>`
+            ).join('');
+            if (!current && modelsList.length > 0) select.value = modelsList[0];
+        }
+
+        function fetchWithTimeout(url, options, timeoutMs) {
+            return new Promise((resolve, reject) => {
+                const controller = new AbortController();
+                const timer = setTimeout(() => { controller.abort(); reject(new Error(`Timeout (${timeoutMs}ms)`)); }, timeoutMs);
+                fetch(url, { ...options, signal: controller.signal })
+                    .then(r  => { clearTimeout(timer); resolve(r); })
+                    .catch(e => { clearTimeout(timer); reject(e); });
+            });
+        }
+
+        // ── Build request and parse response for each chat API format ──
+        async function doCloudChatRequest(url, provider, apiKey, model, systemPrompt, userPrompt) {
+            const info = getProviderInfo(provider);
+
+            if (info.chatApi === 'anthropic') {
+                // Anthropic Messages API
+                const resp = await fetchWithTimeout(`${url}/v1/messages`, {
+                    method:  'POST',
+                    headers: {
+                        'Content-Type':      'application/json',
+                        'x-api-key':         apiKey,
+                        'anthropic-version': '2023-06-01',
+                    },
+                    body: JSON.stringify({
+                        model,
+                        max_tokens: 4096,
+                        system:   systemPrompt,
+                        messages: [{ role: 'user', content: userPrompt }],
+                    })
+                }, 120000);
+                if (!resp.ok) {
+                    const txt = await resp.text().catch(() => '');
+                    throw new Error(`HTTP ${resp.status}: ${txt.slice(0, 200)}`);
+                }
+                const data = await resp.json();
+                return data?.content?.[0]?.text || '';
+            }
+
+            // OpenAI-compat (works for OpenAI, Google, local servers)
+            const headers = { 'Content-Type': 'application/json' };
+            if (apiKey) headers['Authorization'] = `Bearer ${apiKey}`;
+
+            const resp = await fetchWithTimeout(`${url}/v1/chat/completions`, {
+                method: 'POST',
+                headers,
+                body: JSON.stringify({
+                    model,
+                    messages: [
+                        { role: 'system', content: systemPrompt },
+                        { role: 'user',   content: userPrompt   },
+                    ],
+                    temperature: 0.7,
+                    max_tokens:  4096,
+                    stream:      false,
+                })
+            }, 120000);
+            if (!resp.ok) {
+                const txt = await resp.text().catch(() => '');
+                throw new Error(`HTTP ${resp.status}: ${txt.slice(0, 200)}`);
+            }
+            const data = await resp.json();
+            return data?.choices?.[0]?.message?.content || '';
+        }
+
+        // ── Main call function ─────────────────────────────────────────
+        async function callLmsApi(systemPrompt, userPrompt, targetFieldId, statusElId, btnId, badgeId) {
+            const provider = lmStudioSettings.provider || 'lmstudio';
+            const info     = getProviderInfo(provider);
+            const url      = info.isCloud ? info.defaultUrl : (lmStudioSettings.url || info.defaultUrl).trim().replace(/\/+$/, '');
+            const apiKey   = lmStudioSettings.apiKey || '';
+            // Get model from manual input for manualModel providers, or from select
+            let model;
+            if (info.manualModel) {
+                const manualInput = document.getElementById('lmsModelManualInput');
+                model = manualInput?.value?.trim() || lmStudioSettings.model || '';
+            } else {
+                model = lmStudioSettings.model;
+            }
+
+            const btn      = document.getElementById(btnId);
+            const statusEl = document.getElementById(statusElId);
+
+            if (!model) {
+                showSystemNotification('Выберите модель в настройках → Провайдеры', 'warning', 3200);
+                appLog('warn', 'Отправка отменена: модель не выбрана');
+                return;
+            }
+            if (info.isCloud && !apiKey) {
+                showSystemNotification(`Введите API ключ для ${info.label}`, 'warning', 3200);
+                appLog('warn', `Отправка отменена: нет API ключа для ${info.label}`);
+                return;
+            }
+
+            if (btn) {
+                btn.disabled = true; btn.classList.add('loading');
+                btn.innerHTML = `<svg class="w-4 h-4 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg> Жду ответа…`;
+            }
+            if (statusEl) {
+                statusEl.textContent = `⏳ ${info.label} · ${model}…`;
+                statusEl.classList.remove('hidden');
+                statusEl.style.color = 'var(--text-muted)';
+            }
+            appLog('info', `Запрос → ${info.label} · ${model}`);
+
+            try {
+                const result = await doCloudChatRequest(url, provider, apiKey, model, systemPrompt, userPrompt);
+                if (!result) throw new Error('Пустой ответ от модели');
+
+                const field = document.getElementById(targetFieldId);
+                if (field) { field.value = result; field.dispatchEvent(new Event('input')); }
+                autoSave();
+
+                const badge = document.getElementById(badgeId);
+                if (badge) badge.classList.remove('hidden');
+
+                if (statusEl) { statusEl.textContent = `✓ ${info.label} · ${model}`; statusEl.style.color = '#16a34a'; }
+                appLog('success', `Ответ получен ← ${info.label} · ${model}, симв.: ${result.length}`);
+                showSystemNotification(`Ответ от ${model} получен ✓`, 'saved', 2500);
+
+            } catch(e) {
+                appLog('error', `Ошибка ${info.label} · ${model}`, e.message);
+                if (statusEl) { statusEl.textContent = `✗ ${e.message.slice(0, 120)}`; statusEl.style.color = '#ef4444'; }
+                showSystemNotification(`${info.label}: ${e.message.slice(0, 70)}`, 'error', 4500);
+            } finally {
+                if (btn) {
+                    btn.disabled = false; btn.classList.remove('loading');
+                    btn.innerHTML = `<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg> Отправить в ИИ`;
+                }
+            }
+        }
+
+        async function sendEnhancerToLmStudio() {
+            if (!document.getElementById('rawPrompt')?.value?.trim()) {
+                showSystemNotification('Введите запрос на шаге 1', 'warning', 2500);
+                appLog('warn', 'Отправка улучшения промта: пустой запрос');
+                return;
+            }
+            await callLmsApi(enhancerSystem, generateEnhancerUserPrompt(), 'improvedPrompt', 'lms-enhancer-status', 'lms-send-enhancer-btn', 'lms-enhancer-filled-badge');
+        }
+
+        async function sendAggregatorToLmStudio() {
+            if (!models.some(m => getTrimmedAnswerValue(m.id))) {
+                showSystemNotification('Добавьте ответы моделей на шаге 3', 'warning', 2500);
+                appLog('warn', 'Отправка синтеза: нет ответов моделей');
+                return;
+            }
+            await callLmsApi(aggregatorSystem, generateAggregatorPrompt(), 'finalAnswer', 'lms-aggregator-status', 'lms-send-aggregator-btn', 'lms-aggregator-filled-badge');
+        }
+
+        function updateLmsUiVisibility() {
+            const enabled   = lmStudioSettings.enabled;
+            const useFor    = lmStudioSettings.useFor || 'both';
+            const provider  = lmStudioSettings.provider || 'lmstudio';
+            const provLabel = getProviderInfo(provider).label;
+            // Get model from manual input for manualModel providers, or from settings
+            let modelName = lmStudioSettings.model || '—';
+            if (getProviderInfo(provider).manualModel) {
+                const manualInput = document.getElementById('lmsModelManualInput');
+                modelName = manualInput?.value?.trim() || lmStudioSettings.model || '—';
+            }
+
+            const enhancerPanel   = document.getElementById('lms-enhancer-panel');
+            const aggregatorPanel = document.getElementById('lms-aggregator-panel');
+
+            if (enhancerPanel) {
+                const show = enabled && (useFor === 'prompt' || useFor === 'both');
+                enhancerPanel.classList.toggle('hidden', !show);
+                const n = document.getElementById('lms-enhancer-model-name');
+                const p = document.getElementById('lms-enhancer-provider-label');
+                if (n) n.textContent = modelName;
+                if (p) p.textContent = provLabel;
+            }
+            if (aggregatorPanel) {
+                const show = enabled && (useFor === 'synthesis' || useFor === 'both');
+                aggregatorPanel.classList.toggle('hidden', !show);
+                const n = document.getElementById('lms-aggregator-model-name');
+                const p = document.getElementById('lms-aggregator-provider-label');
+                if (n) n.textContent = modelName;
+                if (p) p.textContent = provLabel;
+            }
+
+            // Update HF panel visibility
+            updateHfUiVisibility();
+        }
+
+        // ═══════════════════════════════════════════════════════════════
+        // HUGGING FACE INTEGRATION
+        // ═══════════════════════════════════════════════════════════════
+        let hfSettings = {
+            enabled: false,
+            apiKey: '',
+            model: '',
+            useFor: 'both'
+        };
+
+        function loadHfSettings() {
+            try {
+                const raw = localStorage.getItem('multillm_huggingface');
+                if (raw) hfSettings = { ...hfSettings, ...JSON.parse(raw) };
+            } catch(e) { appLog('error', 'Ошибка загрузки настроек HF', e.message); }
+        }
+
+        function saveHfSettings() {
+            try {
+                localStorage.setItem('multillm_huggingface', JSON.stringify(hfSettings));
+            } catch(e) { appLog('error', 'Ошибка сохранения настроек HF', e.message); }
+        }
+
+        function onHfToggleChange() {
+            const enabled = document.getElementById('hfEnabledToggle').checked;
+            const section = document.getElementById('hf-config-section');
+            if (section) section.style.opacity = enabled ? '1' : '0.5';
+        }
+
+        function toggleHfApiKeyVisibility() {
+            const input = document.getElementById('hfApiKeyInput');
+            const iconClosed = document.getElementById('hf-eye-icon-closed');
+            const iconOpen = document.getElementById('hf-eye-icon-open');
+            if (!input) return;
+            if (input.type === 'password') {
+                input.type = 'text';
+                iconClosed?.classList.add('hidden');
+                iconOpen?.classList.remove('hidden');
+            } else {
+                input.type = 'password';
+                iconClosed?.classList.remove('hidden');
+                iconOpen?.classList.add('hidden');
+            }
+        }
+
+        function setHfModel(model) {
+            const input = document.getElementById('hfModelInput');
+            if (input) input.value = model;
+        }
+
+        function setHfConnectionStatus(status, text) {
+            const el = document.getElementById('hf-connection-status');
+            const textEl = document.getElementById('hf-status-text');
+            if (el) el.className = `lms-status ${status}`;
+            if (textEl) textEl.textContent = text;
+        }
+
+        async function testHfConnection() {
+            const apiKeyInput = document.getElementById('hfApiKeyInput');
+            const modelInput = document.getElementById('hfModelInput');
+            const apiKey = apiKeyInput?.value?.trim() || '';
+            const model = modelInput?.value?.trim() || '';
+
+            if (!apiKey) {
+                setHfConnectionStatus('error', 'Введите API ключ');
+                appLog('warn', 'Проверка HF: API ключ не указан');
+                showSystemNotification('Введите API ключ Hugging Face', 'warning', 3000);
+                return;
+            }
+
+            if (!model) {
+                setHfConnectionStatus('error', 'Укажите модель');
+                appLog('warn', 'Проверка HF: модель не указана');
+                showSystemNotification('Укажите ID модели Hugging Face', 'warning', 3000);
+                return;
+            }
+
+            setHfConnectionStatus('checking', 'Проверка…');
+            const btn = document.getElementById('hf-test-btn');
+            if (btn) btn.disabled = true;
+
+            appLog('info', `Проверка HF → ${model}`);
+
+            try {
+                // Test with a minimal request
+                const resp = await fetchWithTimeout(
+                    `https://router.huggingface.co/hf-inference/models/${model}/v1/chat/completions`,
+                    {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${apiKey}`
+                        },
+                        body: JSON.stringify({
+                            model: model,
+                            messages: [{ role: 'user', content: 'Hi' }],
+                            max_tokens: 1
+                        })
+                    },
+                    15000
+                );
+
+                if (resp.status === 401) {
+                    throw new Error('Неверный API ключ');
+                }
+                if (resp.status === 404) {
+                    throw new Error('Модель не найдена');
+                }
+
+                setHfConnectionStatus('connected', 'Подключено ✓');
+                appLog('success', `HF подключён → ${model}`);
+                showSystemNotification(`Hugging Face подключён ✓`, 'saved', 2500);
+            } catch(e) {
+                setHfConnectionStatus('error', 'Ошибка');
+                appLog('error', `Ошибка HF: ${model}`, e.message);
+                showSystemNotification(`HF: ${e.message.slice(0, 60)}`, 'error', 4000);
+            } finally {
+                if (btn) btn.disabled = false;
+            }
+        }
+
+        function populateHfSettingsUI() {
+            const enabledToggle = document.getElementById('hfEnabledToggle');
+            const apiKeyInput = document.getElementById('hfApiKeyInput');
+            const modelInput = document.getElementById('hfModelInput');
+            const section = document.getElementById('hf-config-section');
+
+            if (enabledToggle) enabledToggle.checked = hfSettings.enabled;
+            if (section) section.style.opacity = hfSettings.enabled ? '1' : '0.5';
+            if (apiKeyInput) apiKeyInput.value = hfSettings.apiKey || '';
+            if (modelInput) modelInput.value = hfSettings.model || '';
+
+            // Set radio
+            const radio = document.querySelector(`input[name="hfUseFor"][value="${hfSettings.useFor || 'both'}"]`);
+            if (radio) radio.checked = true;
+        }
+
+        function updateHfUiVisibility() {
+            const enabled = hfSettings.enabled;
+            const useFor = hfSettings.useFor || 'both';
+            const model = hfSettings.model || '—';
+
+            // Show/hide HF enhancer panel
+            const hfEnhancerPanel = document.getElementById('hf-enhancer-panel');
+            if (hfEnhancerPanel) {
+                const show = enabled && (useFor === 'prompt' || useFor === 'both');
+                hfEnhancerPanel.classList.toggle('hidden', !show);
+                const modelNameEl = document.getElementById('hf-enhancer-model-name');
+                if (modelNameEl) modelNameEl.textContent = model;
+            }
+
+            // Show/hide HF aggregator panel
+            const hfAggregatorPanel = document.getElementById('hf-aggregator-panel');
+            if (hfAggregatorPanel) {
+                const show = enabled && (useFor === 'synthesis' || useFor === 'both');
+                hfAggregatorPanel.classList.toggle('hidden', !show);
+                const modelNameEl = document.getElementById('hf-aggregator-model-name');
+                if (modelNameEl) modelNameEl.textContent = model;
+            }
+        }
+
+        async function callHfApi(systemPrompt, userPrompt, targetFieldId, statusElId, btnId, badgeId) {
+            const apiKey = hfSettings.apiKey || '';
+            const model = hfSettings.model || '';
+
+            const btn = document.getElementById(btnId);
+            const statusEl = document.getElementById(statusElId);
+
+            if (!model) {
+                showSystemNotification('Укажите модель HF в настройках → HF', 'warning', 3200);
+                appLog('warn', 'Отправка HF: модель не указана');
+                return;
+            }
+            if (!apiKey) {
+                showSystemNotification('Введите API ключ HF', 'warning', 3200);
+                appLog('warn', 'Отправка HF: нет API ключа');
+                return;
+            }
+
+            if (btn) {
+                btn.disabled = true; btn.classList.add('loading');
+                btn.innerHTML = `<svg class="w-4 h-4 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg> Жду ответа…`;
+            }
+            if (statusEl) {
+                statusEl.textContent = `⏳ HF · ${model}…`;
+                statusEl.classList.remove('hidden');
+                statusEl.style.color = 'var(--text-muted)';
+            }
+            appLog('info', `Запрос → HF · ${model}`);
+
+            try {
+                const result = await doCloudChatRequest(
+                    `https://router.huggingface.co/hf-inference/models/${model}`,
+                    'huggingface',
+                    apiKey,
+                    model,
+                    systemPrompt,
+                    userPrompt
+                );
+
+                if (!result) throw new Error('Пустой ответ от HF');
+
+                const field = document.getElementById(targetFieldId);
+                if (field) { field.value = result; field.dispatchEvent(new Event('input')); }
+                autoSave();
+
+                const badge = document.getElementById(badgeId);
+                if (badge) badge.classList.remove('hidden');
+
+                if (statusEl) { statusEl.textContent = `✓ HF · ${model}`; statusEl.style.color = '#16a34a'; }
+                appLog('success', `Ответ получен ← HF · ${model}, симв.: ${result.length}`);
+                showSystemNotification(`Ответ от HF ${model} получен ✓`, 'saved', 2500);
+
+            } catch(e) {
+                appLog('error', `Ошибка HF · ${model}`, e.message);
+                if (statusEl) { statusEl.textContent = `✗ ${e.message.slice(0, 120)}`; statusEl.style.color = '#ef4444'; }
+                showSystemNotification(`HF: ${e.message.slice(0, 70)}`, 'error', 4500);
+            } finally {
+                if (btn) {
+                    btn.disabled = false; btn.classList.remove('loading');
+                    btn.innerHTML = `<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg> Отправить в ИИ`;
+                }
+            }
+        }
+
+        async function sendEnhancerToHf() {
+            if (!document.getElementById('rawPrompt')?.value?.trim()) {
+                showSystemNotification('Введите запрос на шаге 1', 'warning', 2500);
+                appLog('warn', 'Отправка улучшения HF: пустой запрос');
+                return;
+            }
+            await callHfApi(enhancerSystem, generateEnhancerUserPrompt(), 'improvedPrompt', 'lms-enhancer-status', 'lms-send-enhancer-btn', 'lms-enhancer-filled-badge');
+        }
+
+        async function sendAggregatorToHf() {
+            if (!models.some(m => getTrimmedAnswerValue(m.id))) {
+                showSystemNotification('Добавьте ответы моделей на шаге 3', 'warning', 2500);
+                appLog('warn', 'Отправка синтеза HF: нет ответов моделей');
+                return;
+            }
+            await callHfApi(aggregatorSystem, generateAggregatorPrompt(), 'finalAnswer', 'lms-aggregator-status', 'lms-send-aggregator-btn', 'lms-aggregator-filled-badge');
+        }
+
         const STORAGE_KEYS = {
             autosave: 'multillm_autosave',
             threads: 'multillm_threads'
@@ -2336,6 +3956,7 @@
                 answers,
                 ratings: { ...modelRatings },
                 currentStep,
+                currentThreadId: currentThread ? currentThread.id : null,
                 timestamp: new Date().toISOString()
             };
         }
@@ -2383,6 +4004,15 @@
                 refreshComparisonView();
 
                 autosaveStepToRestore = state.currentStep || 1;
+
+                // Восстанавливаем currentThread по сохранённому ID
+                if (state.currentThreadId && allThreads.length > 0) {
+                    const foundThread = allThreads.find(t => t.id === state.currentThreadId);
+                    if (foundThread) {
+                        currentThread = foundThread;
+                        isContinuation = foundThread.turns.length > 0;
+                    }
+                }
 
                 return true;
             } catch(e) {
@@ -2592,6 +4222,8 @@
 
         // Initialize
         document.addEventListener('DOMContentLoaded', async () => {
+            loadLogs();
+            loadLmsSettings();
             loadSettings();
             loadPreferences();
             initAutoSave();
@@ -2607,6 +4239,10 @@
             } else {
                 setStep(1);
             }
+
+            updateLmsUiVisibility();
+            updateLogBadge();
+            appLog('info', 'Приложение запущено');
         });
 
         // Keyboard shortcuts
@@ -2791,6 +4427,7 @@
 
             updateModelsCount();
             updatePromptDisplays();
+            updateLmsUiVisibility();
         }
 
         function saveSettings() {
@@ -2800,6 +4437,30 @@
             currentTaskProfile = inferTaskProfileId(enhancerSystem, aggregatorSystem);
             preferences.notificationsEnabled = document.getElementById('notificationsEnabledToggle').checked;
             preferences.useRatingsInSynthesis = document.getElementById('useRatingsInSynthesisToggle').checked;
+
+            // Save provider settings
+            const lmsEnabledEl  = document.getElementById('lmsEnabledToggle');
+            const lmsUrlEl      = document.getElementById('lmsUrlInput');
+            const lmsModelEl    = document.getElementById('lmsModelSelect');
+            const lmsManualEl   = document.getElementById('lmsModelManualInput');
+            const lmsUseForEl   = document.querySelector('input[name="lmsUseFor"]:checked');
+            const lmsProviderEl = document.getElementById('lmsProviderInput');
+            const lmsApiKeyEl   = document.getElementById('lmsApiKeyInput');
+            if (lmsEnabledEl)  lmStudioSettings.enabled  = lmsEnabledEl.checked;
+            if (lmsProviderEl) lmStudioSettings.provider = lmsProviderEl.value || 'lmstudio';
+            // Read model from either dropdown or manual input based on provider type
+            const currentInfo = getProviderInfo(lmStudioSettings.provider);
+            if (currentInfo.manualModel && lmsManualEl) {
+                lmStudioSettings.model = lmsManualEl.value || '';
+            } else if (lmsModelEl && lmsModelEl.value) {
+                lmStudioSettings.model = lmsModelEl.value;
+            }
+            if (lmsUseForEl)   lmStudioSettings.useFor   = lmsUseForEl.value;
+            if (lmsApiKeyEl !== null) lmStudioSettings.apiKey = lmsApiKeyEl?.value?.trim() || '';
+            // Only save URL for non-cloud providers
+            const provInfo = getProviderInfo(lmStudioSettings.provider);
+            if (!provInfo.isCloud && lmsUrlEl) lmStudioSettings.url = lmsUrlEl.value.trim().replace(/\/+$/, '') || provInfo.defaultUrl;
+            saveLmsSettings();
 
             localStorage.setItem('multillm_models', JSON.stringify(models));
             localStorage.setItem('multillm_enhancer', enhancerSystem);
@@ -2818,6 +4479,8 @@
                 ensureModelCardsRendered(true);
             }
             updatePromptDisplays();
+            updateLmsUiVisibility();
+            appLog('success', 'Настройки сохранены');
             closeSettings();
         }
 
@@ -2832,6 +4495,14 @@
             document.getElementById('useRatingsInSynthesisToggle').checked = preferences.useRatingsInSynthesis;
             currentTaskProfile = inferTaskProfileId(enhancerSystem, aggregatorSystem);
             updateTaskProfileUi(currentTaskProfile);
+            // Populate LM Studio tab
+            populateLmsSettingsUI();
+            // Populate Logs tab
+            const loggingToggle = document.getElementById('loggingEnabledToggle');
+            if (loggingToggle) loggingToggle.checked = loggingEnabled;
+            renderLogs();
+            updateLogStats();
+            updateLogBadge();
             setSettingsTab('general');
         }
 
@@ -2842,13 +4513,15 @@
         function setSettingsTab(tab) {
             settingsTab = tab;
             document.querySelectorAll('.settings-tab').forEach(t => t.classList.remove('active'));
-            document.querySelector(`.settings-tab[onclick="setSettingsTab('${tab}')"]`).classList.add('active');
+            const activeTab = document.querySelector(`.settings-tab[onclick="setSettingsTab('${tab}')"]`);
+            if (activeTab) activeTab.classList.add('active');
             document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
-            document.getElementById(`settings-${tab}`).classList.add('active');
+            const pane = document.getElementById(`settings-${tab}`);
+            if (pane) pane.classList.add('active');
             // Refresh templates list when templates tab is selected
-            if (tab === 'templates') {
-                renderTemplatesList();
-            }
+            if (tab === 'templates') renderTemplatesList();
+            if (tab === 'lmstudio') populateLmsSettingsUI();
+            if (tab === 'logs') { renderLogs(); updateLogStats(); }
         }
 
         function renderModelsList() {
@@ -3257,6 +4930,9 @@
             if (step === 5) {
                 updateResults();
             }
+
+            // Update LM Studio panel visibility
+            updateLmsUiVisibility();
         }
 
         function setResultTab(tab, evt) {
@@ -4010,14 +5686,7 @@ ${answersText}`;
 
         function closeContinueModal() {
             document.getElementById('continueModal').classList.add('hidden');
-            // Reset currentThread if the modal was opened from openThread but not submitted
-            // Check if we're in a continuation flow that wasn't completed
-            if (currentThread && !isContinuation) {
-                // If currentThread was set but continuation wasn't submitted, reset it
-                currentThread = null;
-                continuationUrls = {};
-                renderInPageChatHistory();
-            }
+            // Не сбрасываем currentThread, чтобы не потерять контекст чата
         }
 
         function submitContinue() {
