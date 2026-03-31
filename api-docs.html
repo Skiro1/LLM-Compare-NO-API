@@ -431,7 +431,7 @@ console.log(data.choices[0].message.content);</pre>
                         <td><code class="inline-code">sk-...</code></td>
                     </tr>
                     <tr>
-                        <td>Anthropic</td>
+                        <td>Anthropic <span style="color:#a16207;font-size:0.75rem;">🔒 прокси</span></td>
                         <td><a href="https://console.anthropic.com" target="_blank">console.anthropic.com</a></td>
                         <td><code class="inline-code">sk-ant-...</code></td>
                     </tr>
@@ -472,6 +472,59 @@ console.log(data.choices[0].message.content);</pre>
                 <div class="info-box-title">⚠️ Безопасность</div>
                 <p>Никогда не храните API ключи в клиентском коде. Используйте переменные окружения или серверные прокси для production приложений.</p>
             </div>
+
+            <h3>Импорт и экспорт ключей</h3>
+            <p>В настройках (вкладка «Провайдеры») доступны кнопки для массового управления ключами:</p>
+            <ul>
+                <li><strong>Импорт ключей (.txt)</strong> — загрузите файл с ключами, все провайдеры за раз</li>
+                <li><strong>Экспорт ключей</strong> — скачайте все ключи в файл <code class="inline-code">api-keys.txt</code></li>
+                <li><strong>Удалить все ключи</strong> — очистить все ключи одним кликом (с подтверждением)</li>
+            </ul>
+
+            <h4>Формат файла для импорта</h4>
+            <div class="card">
+                <div class="code-block-wrapper">
+                    <button class="code-copy-btn" onclick="copySingleCode(this)">
+                        <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg>
+                        Копировать
+                    </button>
+                    <pre class="code-block">OPENAI - sk-your-key-here
+GROQ - gsk_your-key-here
+GOOGLE - AIzayour-key-here
+ANTHROPIC - sk-ant-your-key-here
+DEEPSEEK - sk-your-key-here
+MISTRAL - your-key-here
+HUGGING_FACE - hf_your-key-here
+OPENROUTER - sk-or-your-key-here</pre>
+                </div>
+            </div>
+            <p>Правила:</p>
+            <ul>
+                <li>Каждый ключ на новой строке</li>
+                <li>Формат: <code class="inline-code">ПРОВАЙДЕР - ключ</code> (разделитель — пробел, дефис, пробел)</li>
+                <li>Порядок строк не важен</li>
+                <li>Не все ключи обязательны — можно указать только нужные</li>
+                <li>Строки, начинающиеся с <code class="inline-code">#</code>, игнорируются (комментарии)</li>
+            </ul>
+
+            <table>
+                <thead>
+                    <tr>
+                        <th>Название в файле</th>
+                        <th>Провайдер</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr><td><code class="inline-code">OPENAI</code></td><td>OpenAI</td></tr>
+                    <tr><td><code class="inline-code">GROQ</code></td><td>Groq Cloud</td></tr>
+                    <tr><td><code class="inline-code">GOOGLE</code></td><td>Google (Gemini)</td></tr>
+                    <tr><td><code class="inline-code">ANTHROPIC</code></td><td>Anthropic</td></tr>
+                    <tr><td><code class="inline-code">DEEPSEEK</code></td><td>DeepSeek</td></tr>
+                    <tr><td><code class="inline-code">MISTRAL</code></td><td>Mistral AI</td></tr>
+                    <tr><td><code class="inline-code">HUGGING_FACE</code> или <code class="inline-code">HUGGINGFACE</code></td><td>Hugging Face</td></tr>
+                    <tr><td><code class="inline-code">OPENROUTER</code></td><td>OpenRouter</td></tr>
+                </tbody>
+            </table>
         </section>
 
         <!-- Chat Completions -->
