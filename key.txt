@@ -1,0 +1,8 @@
+GROQ - key
+GOOGLE - key
+OPENAI - key
+ANTHROPIC - key
+DEEPSEEK - key
+MISTRAL - key
+HUGGING_FACE - key
+OPENROUTER - key
