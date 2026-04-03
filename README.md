@@ -1,5 +1,7 @@
 # LLM Compare
 
+> 🌐 **[Русская версия](ru/README.md)** — документация на русском языке
+
 A simple tool for comparing responses from different AI chats and manually assembling a final synthesis without APIs or local models.
 
 ## Features
@@ -279,3 +281,11 @@ LLM_Compare/
 - Work via API or manually — your choice
 - Maintain session history and continue old chats
 - Keep the entire workflow in one local file
+
+## License
+
+This project is licensed under the **MIT License** — see [LICENSE](LICENSE) for details.
+
+## Changelog
+
+See [CHANGELOG.md](CHANGELOG.md) for a full list of changes and planned improvements.
