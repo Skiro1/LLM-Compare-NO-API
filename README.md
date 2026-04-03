@@ -1,5 +1,7 @@
 # LLM Compare
 
+> **Русская версия**: [ru/README.md](ru/README.md)
+
 A simple tool for comparing responses from different AI chats and manually assembling the final synthesis without APIs and local models.
 
 ## Features
