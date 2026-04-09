@@ -229,7 +229,7 @@ Available in `Settings`:
 
 ## API Documentation
 
-All providers use a format compatible with OpenAI API. Details on endpoints, parameters and streaming — see [api-docs.html](api-docs.html).
+All providers use a format compatible with OpenAI API. Details on endpoints, parameters and streaming are available in each provider's official documentation.
 
 ## Project Structure
 
@@ -237,7 +237,6 @@ All providers use a format compatible with OpenAI API. Details on endpoints, par
 LLM_Compare/
 ├── index.html                # Main application interface (modular)
 ├── proxy-server.js           # Proxy server for CORS bypass (Anthropic) + static files
-├── api-docs.html             # API provider documentation
 ├── README.md                 # Project description
 ├── .gitignore                # Git exclusions
 ├── css/

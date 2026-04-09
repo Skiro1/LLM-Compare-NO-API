@@ -6,12 +6,10 @@
 
 #### Files Translated to English
 - ✅ `README.md` — Full project description translated
-- ✅ `api-docs.html` — Complete API documentation (1349 lines)
 - ✅ `LLM_Compare.html` — Main application interface (6083 lines)
 - ✅ `proxy-server.js` — Console messages translated
 
 #### Chrome Extension (`chrome-extension/`)
-- ✅ `api-docs.html` — API documentation
 - ✅ `LLM_Compare.html` — Application interface
 - ✅ `app.js` — Application logic (4158 lines) including:
   - System prompts (enhancer + aggregator)
@@ -24,7 +22,6 @@
 - ✅ `README.md` — Extension documentation
 
 #### Firefox Extension (`firefox-extension/`)
-- ✅ `api-docs.html` — API documentation
 - ✅ `LLM_Compare.html` — Application interface
 - ✅ `app.js` — Application logic (4158 lines)
 - ✅ `docs.js` — Theme toggle and copy button labels
@@ -67,8 +64,6 @@
   - `js/modules/init.js` — Initialization and keyboard shortcuts
   - `js/modules/app.js` — Main application logic
   - Applied to all 6 locations: root, `ru/`, `chrome-extension/`, `firefox-extension/`, `ru/chrome-extension/`, `ru/firefox-extension/`
-- [ ] **Add build system** — Use Vite or Webpack for bundling
-- [ ] **Remove CDN Tailwind** — Migrate to Tailwind CLI or PostCSS plugin
 
 #### Error Handling & Reliability
 - [ ] **Add comprehensive error handling** — try/catch for all API calls
@@ -144,12 +139,15 @@
 
 ## Version History
 
-### v1.2.0 — Modular Architecture Refactor
+### v1.2.0 — Modular Architecture & UX Improvements
 - ✅ Split monolithic `LLM_Compare.html` into 11 JS modules + CSS
 - ✅ Cheerio-based automated split script
 - ✅ All JS files pass `node --check` syntax validation
 - ✅ Applied to all 6 locations (root, ru/, extensions)
 - ✅ Star History badge added to README
+- ✅ **Fixed textarea resize bug** — replaced `resize: vertical` with auto-resize JS (no more glitchy drag handle)
+- ✅ **Removed API Documentation** — deleted `api-docs.html` from all 6 locations, removed buttons and links from all index.html and popup files
+- ✅ **Fixed popup.js** — restored broken extension popup files (were corrupted during cleanup)
 - ✅ Removed temporary files and cleanup scripts
 - ✅ `.gitignore` updated
 
