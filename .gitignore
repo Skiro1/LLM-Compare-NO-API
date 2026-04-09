@@ -2,67 +2,87 @@
 # LLM Compare - .gitignore
 # =============================================================================
 
-# Archives
+# ── Archives ──────────────────────────────────────────────────────
 *.zip
 *.rar
 *.7z
 *.tar.gz
 *.tar.bz2
 
-# IDE / Editor
+# ── IDE / Editor ─────────────────────────────────────────────────
 .vscode/
 .idea/
 *.swp
 *.swo
 *~
+*.sublime-*
 
-# OS
+# ── OS ───────────────────────────────────────────────────────────
 .DS_Store
 Thumbs.db
 desktop.ini
+ehthumbs.db
 
-# Node
+# ── Node ─────────────────────────────────────────────────────────
 node_modules/
 package-lock.json
 npm-debug.log
+yarn-debug.log
+yarn-error.log
 
-# Python
+# ── Python ───────────────────────────────────────────────────────
 __pycache__/
 *.pyc
 *.pyo
 *.egg-info/
 dist/
 build/
+*.egg
 
-# LibreTranslate (external dependency)
+# ── LibreTranslate (external dependency) ─────────────────────────
 LibreTranslate/
 
-# Logs
+# ── Logs ─────────────────────────────────────────────────────────
 *.log
+npm-debug.log*
 
-# Temporary files
+# ── Temporary files ──────────────────────────────────────────────
 *.tmp
 *.temp
 *.bak
 nul
 
-# Project-specific (not part of the codebase)
+# ── Environment variables / Secrets ──────────────────────────────
+.env
+.env.local
+.env.*.local
+*.key
+*.pem
+*.secret
+api-keys.txt
+key.txt
+
+# ── Project-specific (not part of the codebase) ──────────────────
 AGENTS.md
 Commands.txt
 opencode.json
 
-# Translation helper scripts (one-time use)
+# ── Translation helper scripts (one-time use) ────────────────────
 translate.js
 *.translate.*
 bulk_translate.*
 translate_all.*
 
-# Environment variables
-.env
-.env.local
-.env.*.local
-
-# Build artifacts (if using bundler in future)
+# ── Build artifacts ──────────────────────────────────────────────
 dist/
 build/
 out/
+
+# ── Browser devtools ─────────────────────────────────────────────
+.devtools/
+.qwen/
+
+# ── Coverage / Testing ───────────────────────────────────────────
+coverage/
+.nyc_output/
+*.lcov
