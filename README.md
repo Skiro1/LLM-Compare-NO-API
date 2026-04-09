@@ -289,3 +289,13 @@ This project is licensed under the **MIT License** — see [LICENSE](LICENSE) fo
 ## Changelog
 
 See [CHANGELOG.md](CHANGELOG.md) for a full list of changes and planned improvements.
+
+## Star History
+
+<a href="https://www.star-history.com/?repos=Skiro1%2FLLM-Compare&type=date&legend=top-left">
+ <picture>
+   <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/chart?repos=Skiro1/LLM-Compare&type=date&theme=dark&legend=top-left" />
+   <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/chart?repos=Skiro1/LLM-Compare&type=date&legend=top-left" />
+   <img alt="Star History Chart" src="https://api.star-history.com/chart?repos=Skiro1/LLM-Compare&type=date&legend=top-left" />
+ </picture>
+</a>
